@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>pinshelf — your bookmarks, on a shelf only you can reach</title>
+    <meta
+      name="description"
+      content="Self-hosted bookmark manager. Save a page, keep it organised, find it again later. Runs on your own Cloudflare account."
+    />
+    <meta property="og:title" content="pinshelf" />
+    <meta
+      property="og:description"
+      content="Self-hosted bookmark manager. Save a page, keep it organised, find it again later."
+    />
+    <meta property="og:image" content="https://pinshelf.app/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      document.documentElement.classList.add('js')
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="./">
+          <svg
+            class="mark"
+            width="22"
+            height="22"
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
+            <circle
+              cx="66"
+              cy="46"
+              r="20"
+              fill="none"
+              stroke="var(--steel)"
+              stroke-width="17"
+            />
+            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+          </svg>
+          <span class="wordmark">pinshelf</span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="menu"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h14M3 10h14M3 14h14" />
+          </svg>
+        </button>
+        <nav id="site-nav" class="site-nav" aria-label="site">
+          <a href="#features">features</a>
+          <a href="#self-host">self-host</a>
+          <a href="docs">docs</a>
+          <a class="btn" href="https://github.com/nxplain-sh/pinshelf">github ↗</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero wrap">
+        <p class="eyebrow">self-hosted · single user · open source</p>
+        <h1>Your bookmarks, on a shelf only you can reach.</h1>
+        <p class="lede">
+          Save a page, keep it organised, find it again later. pinshelf runs on your own
+          Cloudflare account — no account to create anywhere but your own instance.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#self-host">get started</a>
+          <a class="btn" href="https://github.com/nxplain-sh/pinshelf">read the source</a>
+        </div>
+        <div class="cmd">
+          <code><span class="prompt">$</span> docker compose up -d</code>
+          <button
+            class="copy"
+            type="button"
+            aria-label="Copy command"
+            data-copy="docker compose up -d"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="7" y="7" width="9" height="9" rx="1.5" />
+              <path
+                d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+              />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="wrap">
+        <div class="shot" aria-hidden="true">
+          <div class="shot-bar">
+            <svg
+              class="mark"
+              width="20"
+              height="20"
+              viewBox="0 0 120 120"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
+              <circle
+                cx="66"
+                cy="46"
+                r="20"
+                fill="none"
+                stroke="var(--steel)"
+                stroke-width="17"
+              />
+              <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            </svg>
+            <span class="shot-search">rust</span>
+            <span class="btn btn-quiet">add</span>
+            <span class="btn btn-quiet">settings</span>
+          </div>
+          <div class="shot-body">
+            <div class="shot-rail">
+              <ul>
+                <li class="active"><span>all</span><span class="count">128</span></li>
+                <li><span>reading</span><span class="count">24</span></li>
+                <li><span>ops</span><span class="count">17</span></li>
+                <li><span>design</span><span class="count">9</span></li>
+                <li><span>trash</span><span class="count">3</span></li>
+              </ul>
+              <p class="rail-label">tags</p>
+              <ul class="shot-tags">
+                <li class="active">rust</li>
+                <li>linux</li>
+                <li>db</li>
+                <li>notes</li>
+              </ul>
+            </div>
+            <ul class="shot-list">
+              <li>
+                <div class="row-main">
+                  <span class="row-title">Ownership, borrowing and lifetimes</span>
+                  <span class="row-meta">doc.rust-lang.org · 2d ago</span>
+                </div>
+                <div class="row-tags">
+                  <span class="chip">rust</span>
+                  <span class="chip">ownership</span>
+                </div>
+              </li>
+              <li>
+                <div class="row-main">
+                  <span class="row-title">Error handling patterns worth stealing</span>
+                  <span class="row-meta">blog.example.dev · 5d ago</span>
+                </div>
+                <div class="row-tags">
+                  <span class="chip">rust</span>
+                  <span class="chip">errors</span>
+                </div>
+              </li>
+              <li>
+                <div class="row-main">
+                  <span class="row-title">Async runtimes, compared</span>
+                  <span class="row-meta">wiki.example.org · 1w ago</span>
+                </div>
+                <div class="row-tags">
+                  <span class="chip">rust</span>
+                  <span class="chip">async</span>
+                </div>
+              </li>
+              <li>
+                <div class="row-main">
+                  <span class="row-title">Notes on writing a parser by hand</span>
+                  <span class="row-meta row-warn">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 120 120"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <rect
+                        x="12"
+                        y="78"
+                        width="96"
+                        height="14"
+                        rx="7"
+                        fill="var(--ink-faint)"
+                      />
+                      <circle
+                        cx="66"
+                        cy="46"
+                        r="20"
+                        fill="none"
+                        stroke="var(--ink-faint)"
+                        stroke-width="17"
+                      />
+                      <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--ink-faint)" />
+                    </svg>
+                    metadata fetch failed · retry
+                  </span>
+                </div>
+                <div class="row-tags">
+                  <span class="chip">parser</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="caption">the app · dark, dense, keyboard-first</p>
+      </section>
+
+      <section id="features" class="wrap section">
+        <div class="section-head">
+          <h2>What it does</h2>
+          <p class="aside">and nothing it doesn't</p>
+        </div>
+        <ul class="cards">
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3h8v14l-4-3-4 3z" />
+            </svg>
+            <h3>Save in one click</h3>
+            <p>
+              The extension grabs the page you're on. Title and favicon are fetched for
+              you.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 11V4h7l7 7-7 7z" />
+              <circle cx="6.5" cy="7.5" r="1.2" />
+            </svg>
+            <h3>Collections and tags</h3>
+            <p>
+              Group by project, filter by tag. Bulk-edit a hundred rows without a modal in
+              sight.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="9" cy="9" r="5.5" />
+              <path d="M13 13l4 4" />
+            </svg>
+            <h3>Find it again</h3>
+            <p>
+              Search titles, hosts and tags from the keyboard. The thing you saved in
+              March is two keystrokes away.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" />
+            </svg>
+            <h3>Trash that waits</h3>
+            <p>
+              Deleted rows sit in the trash until you say otherwise. Nothing leaves
+              without a second look.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="6" y="3" width="8" height="14" rx="1.5" />
+              <path d="M10 14.5h.01" />
+            </svg>
+            <h3>Installs as an app</h3>
+            <p>
+              A PWA on the desktop and the phone, plus a browser extension. No store, no
+              review queue.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="10" cy="7" r="3" />
+              <path d="M4 17c0-3 2.7-5 6-5s6 2 6 5" />
+            </svg>
+            <h3>One user: you</h3>
+            <p>
+              No teams, no invites, no sharing model to reason about. Your instance
+              answers to one login.
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section id="self-host" class="wrap section">
+        <div class="split">
+          <div>
+            <h2>Run it where you like</h2>
+            <p>
+              One container and a volume. Put it behind your reverse proxy, point a
+              subdomain at it, and it's yours. Nothing calls home, because there's no home
+              to call.
+            </p>
+            <ul class="bullets">
+              <li>data lives in a single volume you can tar</li>
+              <li>export everything as JSON or HTML whenever you want</li>
+              <li>no telemetry, no third-party fonts, no external requests</li>
+            </ul>
+            <a class="link" href="docs">read the install docs →</a>
+          </div>
+          <div class="codepanel">
+            <div class="tabs" role="tablist" aria-label="install methods">
+              <button
+                class="tab"
+                type="button"
+                role="tab"
+                id="tab-docker"
+                aria-controls="panel-docker"
+                aria-selected="true"
+              >
+                docker
+              </button>
+              <button
+                class="tab"
+                type="button"
+                role="tab"
+                id="tab-cloudflare"
+                aria-controls="panel-cloudflare"
+                aria-selected="false"
+              >
+                cloudflare
+              </button>
+              <button
+                class="tab"
+                type="button"
+                role="tab"
+                id="tab-local"
+                aria-controls="panel-local"
+                aria-selected="false"
+              >
+                local
+              </button>
+            </div>
+            <div
+              class="panel"
+              id="panel-docker"
+              role="tabpanel"
+              aria-labelledby="tab-docker"
+            >
+              <div class="codeblock-wrap">
+                <pre class="codeblock">
+services:
+  pinshelf:
+    image: ghcr.io/nxplain-sh/pinshelf:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - pinshelf-data:/data
+    environment:
+      BETTER_AUTH_SECRET: [YOUR-SECRET]
+      BETTER_AUTH_URL: http://[YOUR-HOST]:3000
+    restart: unless-stopped
+
+volumes:
+  pinshelf-data:</pre>
+                <button class="copy" type="button" aria-label="Copy compose file">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="7" y="7" width="9" height="9" rx="1.5" />
+                    <path
+                      d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="cmd cmd-block">
+                <code><span class="prompt">$</span> docker compose up -d</code>
+                <button
+                  class="copy"
+                  type="button"
+                  aria-label="Copy command"
+                  data-copy="docker compose up -d"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="7" y="7" width="9" height="9" rx="1.5" />
+                    <path
+                      d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div
+              class="panel"
+              id="panel-cloudflare"
+              role="tabpanel"
+              aria-labelledby="tab-cloudflare"
+              hidden
+            >
+              <ol class="steps">
+                <li>
+                  Deploy from the button — Cloudflare clones the repo into your account.
+                </li>
+                <li>
+                  <code>make d1-create</code> and paste the database id into
+                  <code>apps/web/wrangler.jsonc</code>.
+                </li>
+                <li>
+                  <code>make secret-put</code> to upload <code>BETTER_AUTH_SECRET</code>.
+                </li>
+                <li><code>make db-migrate-remote</code>.</li>
+                <li><code>make deploy</code>.</li>
+              </ol>
+              <a
+                class="btn"
+                href="https://deploy.workers.cloudflare.com/?url=https://github.com/nxplain-sh/pinshelf"
+                >deploy to cloudflare</a
+              >
+              <p class="panel-note">no cloudflare account? run it on your own vps:</p>
+              <a
+                class="btn"
+                href="https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/nxplain-sh/pinshelf/main/compose.yaml&amp;REFERRALCODE=BV0GMAILNSKR"
+                >deploy on hostinger</a
+              >
+            </div>
+            <div
+              class="panel"
+              id="panel-local"
+              role="tabpanel"
+              aria-labelledby="tab-local"
+              hidden
+            >
+              <div class="cmd cmd-block">
+                <code
+                  ><span class="prompt">$</span> make setup
+                  <span class="prompt">$</span> pnpm dev</code
+                >
+                <button
+                  class="copy"
+                  type="button"
+                  aria-label="Copy command"
+                  data-copy="make setup && pnpm dev"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="7" y="7" width="9" height="9" rx="1.5" />
+                    <path
+                      d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <p class="panel-note">web on http://localhost:3000</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap section">
+        <h2>Save from wherever you read</h2>
+        <ul class="clients">
+          <li>
+            <p class="num">01 / browser</p>
+            <h3>The extension</h3>
+            <p>Chrome and Firefox. One shortcut, tags before you forget them.</p>
+          </li>
+          <li>
+            <p class="num">02 / phone</p>
+            <h3>Installed as a PWA</h3>
+            <p>Add to home screen and share straight into it from any app.</p>
+          </li>
+          <li>
+            <p class="num">03 / anywhere</p>
+            <h3>Paste a URL</h3>
+            <p>The add box takes a link and sorts out the rest on its own.</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="wrap">
+        <div class="closing">
+          <h2>Up in about a minute.</h2>
+          <p>Deploy it, open the URL, save your first page.</p>
+          <div class="cmd">
+            <code><span class="prompt">$</span> docker compose up -d</code>
+            <button
+              class="copy"
+              type="button"
+              aria-label="Copy command"
+              data-copy="docker compose up -d"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="7" y="7" width="9" height="9" rx="1.5" />
+                <path
+                  d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+                />
+              </svg>
+            </button>
+          </div>
+          <a class="btn btn-primary" href="https://github.com/nxplain-sh/pinshelf"
+            >github ↗</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap footer-inner">
+        <p class="foot-brand">
+          <svg
+            class="mark"
+            width="22"
+            height="22"
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--ink-faint)" />
+            <circle
+              cx="66"
+              cy="46"
+              r="20"
+              fill="none"
+              stroke="var(--ink-faint)"
+              stroke-width="17"
+            />
+            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--ink-faint)" />
+          </svg>
+          pinshelf · MIT · built under nxplain.sh
+        </p>
+        <nav aria-label="footer">
+          <a href="docs">docs</a>
+          <a href="https://github.com/nxplain-sh/pinshelf/releases">releases</a>
+          <a href="https://github.com/nxplain-sh/pinshelf/issues">issues</a>
+          <a href="https://github.com/nxplain-sh/pinshelf">github</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="site.js" defer></script>
+  </body>
+</html>

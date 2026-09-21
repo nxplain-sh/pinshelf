@@ -1,0 +1,10 @@
+node_modules
+.turbo
+.output
+dist
+.wrangler
+pnpm-lock.yaml
+apps/web/worker-configuration.d.ts
+apps/web/src/routeTree.gen.ts
+apps/web/migrations
+site/public/assets

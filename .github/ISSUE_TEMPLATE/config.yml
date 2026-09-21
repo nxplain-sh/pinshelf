@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/nxplain-sh/pinshelf/security/advisories/new
+    about: Report vulnerabilities privately, never in a public issue.
+  - name: Architecture decisions
+    url: https://github.com/nxplain-sh/pinshelf/tree/main/docs/adr
+    about: Read the ADRs before proposing a stack change.

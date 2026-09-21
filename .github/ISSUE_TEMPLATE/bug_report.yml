@@ -1,0 +1,51 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report security issues here. Follow [SECURITY.md](https://github.com/nxplain-sh/pinshelf/blob/main/SECURITY.md) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Save https://example.com
+        2. Open the bookmark
+        3. Press "Refetch metadata"
+        4. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Commit SHA or release tag you are running.
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Self-hosted on Cloudflare
+        - Local development (pnpm dev)
+        - Browser extension
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Worker logs or browser console output, if any. Remove secrets first.
+      render: shell
+    validations:
+      required: false

@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pinshelf-site",
+  "compatibility_date": "2026-09-20",
+  // The Worker only wraps responses from the asset store to add security
+  // headers and cache lifetimes; the files in public/ are the site.
+  "main": "src/index.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    // Run the Worker on asset hits too, so headers reach every response.
+    "run_worker_first": true,
+  },
+  // The apex serves the site; the app lives at app.pinshelf.app. See ADR-0015.
+  "routes": [{ "pattern": "pinshelf.app", "custom_domain": true }],
+}

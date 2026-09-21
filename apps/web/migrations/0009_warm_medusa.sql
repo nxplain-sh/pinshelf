@@ -1,0 +1,1 @@
+ALTER TABLE `two_factor` ADD `created_at` integer DEFAULT (unixepoch()) NOT NULL;

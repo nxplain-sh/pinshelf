@@ -1,0 +1,13 @@
+{
+  "name": "@pinshelf/site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "node scripts/check-contrast.mjs && node scripts/check-headers.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.135.0"
+  }
+}

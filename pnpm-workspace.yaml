@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+  - site
+
+allowBuilds:
+  esbuild: true
+  vue-demi: true
+  workerd: true

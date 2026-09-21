@@ -1,0 +1,1 @@
+ALTER TABLE `bookmarks` ADD `sort_index` integer;

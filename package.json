@@ -1,0 +1,33 @@
+{
+  "name": "pinshelf",
+  "private": true,
+  "packageManager": "pnpm@12.4.2",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "deploy": "turbo run deploy",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "biome check --error-on-warnings .",
+    "lint:fix": "biome check --write --error-on-warnings .",
+    "prepare": "husky || true"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,json,jsonc,css,md,yml,yaml}": "prettier --write --ignore-unknown",
+    "*.{ts,tsx,js,mjs}": "biome check --write --error-on-warnings --no-errors-on-unmatched"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.8",
+    "turbo": "^2.11.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

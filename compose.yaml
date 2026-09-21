@@ -1,0 +1,35 @@
+services:
+  pinshelf:
+    image: ghcr.io/nxplain-sh/pinshelf:latest
+    ports:
+      - '${PINSHELF_PORT:-3000}:3000'
+    environment:
+      # Generate one with: openssl rand -base64 32
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      # Public origin of the instance, e.g. http://203.0.113.10:3000
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+    volumes:
+      # A bind mount instead of this volume must be owned by uid 1000.
+      - pinshelf-data:/data
+    # wrangler dev spawns workerd; init reaps it and forwards signals.
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  # Scheduled handlers do not fire in a container, so the daily R2 snapshot
+  # never runs and Settings -> Backups -> Back up now is the only in-app way to
+  # write one. Uncomment this sidecar to loop the backup request instead. It is
+  # a template: there is no HTTP backup endpoint yet, so align the URL with one
+  # before enabling it.
+  # scheduler:
+  #   image: curlimages/curl:8.22.0
+  #   depends_on:
+  #     - pinshelf
+  #   entrypoint: ['/bin/sh', '-c']
+  #   command:
+  #     - 'while true; do curl -fsS -X POST http://pinshelf:3000/api/backup; sleep 86400; done'
+  #   restart: unless-stopped
+
+volumes:
+  pinshelf-data:

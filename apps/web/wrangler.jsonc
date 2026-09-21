@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pinshelf",
+  "compatibility_date": "2026-09-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/server.ts",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pinshelf",
+      // Replace with the id `make d1-create` prints.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BACKUPS",
+      "bucket_name": "pinshelf-backups",
+    },
+  ],
+  "triggers": {
+    // Daily snapshot of the library into R2. See docs/adr/0014.
+    "crons": ["0 3 * * *"],
+  },
+  "vars": {
+    "BETTER_AUTH_URL": "https://app.pinshelf.app",
+  },
+  // The apex serves the static site (see site/ and ADR-0015); the app answers
+  // on its own hostname.
+  "routes": [{ "pattern": "app.pinshelf.app", "custom_domain": true }],
+}

@@ -1,0 +1,6 @@
+# Secrets and vars for the Worker during local development.
+# Copy to `.dev.vars` (gitignored) and set a real secret:
+#   openssl rand -base64 32
+
+BETTER_AUTH_SECRET=generate-with-openssl-rand-base64-32
+BETTER_AUTH_URL=http://localhost:3000

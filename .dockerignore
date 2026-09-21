@@ -1,0 +1,28 @@
+.git
+.github
+# CI, docs, and the site sources stay out of the build context; the Dockerfile
+# only needs site/package.json so the workspace install resolves.
+site/**
+!site/package.json
+docs/adr
+*.md
+.turbo
+**/.turbo
+node_modules
+**/node_modules
+dist
+**/dist
+.output
+**/.output
+.wrangler
+**/.wrangler
+.wxt
+**/.wxt
+.dev.vars
+**/.dev.vars
+.env
+.env.*
+coverage
+*.tsbuildinfo
+**/*.tsbuildinfo
+.DS_Store

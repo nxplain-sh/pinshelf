@@ -1,0 +1,14 @@
+node_modules
+.turbo
+.output
+dist
+.wrangler
+.dev.vars
+.env
+.env.*
+!.env.example
+worker-configuration.d.ts
+coverage
+*.tsbuildinfo
+.DS_Store
+.wxt

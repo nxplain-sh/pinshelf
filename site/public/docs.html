@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>docs — pinshelf</title>
+    <meta
+      name="description"
+      content="Install pinshelf with Docker or Cloudflare, run it behind a reverse proxy, back it up, connect the extension and the PWA, and find the settings that matter."
+    />
+    <meta property="og:title" content="pinshelf — docs" />
+    <meta
+      property="og:description"
+      content="Install pinshelf with Docker or Cloudflare, run it behind a reverse proxy, back it up, connect the extension and the PWA, and find the settings that matter."
+    />
+    <meta property="og:image" content="https://pinshelf.app/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      document.documentElement.classList.add('js')
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="./">
+          <svg
+            class="mark"
+            width="22"
+            height="22"
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
+            <circle
+              cx="66"
+              cy="46"
+              r="20"
+              fill="none"
+              stroke="var(--steel)"
+              stroke-width="17"
+            />
+            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+          </svg>
+          <span class="wordmark">pinshelf</span>
+          <span class="crumb">/ docs</span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="menu"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h14M3 10h14M3 14h14" />
+          </svg>
+        </button>
+        <nav id="site-nav" class="site-nav" aria-label="site">
+          <a href="./#features">features</a>
+          <a href="./#self-host">self-host</a>
+          <a class="active" href="docs">docs</a>
+          <a class="btn" href="https://github.com/nxplain-sh/pinshelf">github ↗</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="wrap docs">
+      <aside class="docs-side" aria-label="docs">
+        <div class="docs-search">
+          <input
+            class="docs-filter"
+            type="search"
+            placeholder="filter sections"
+            aria-label="filter docs sections"
+            autocomplete="off"
+          />
+        </div>
+        <p class="side-group">getting started</p>
+        <ul>
+          <li><a class="active" href="#install" aria-current="true">install</a></li>
+          <li><a href="#first-run">first run</a></li>
+          <li><a href="#reverse-proxy">reverse proxy</a></li>
+          <li><a href="#backup-restore">backup &amp; restore</a></li>
+        </ul>
+        <p class="side-group">clients</p>
+        <ul>
+          <li><a href="#extension">browser extension</a></li>
+          <li><a href="#pwa">install the pwa</a></li>
+        </ul>
+        <p class="side-group">reference</p>
+        <ul>
+          <li><a href="#configuration">configuration</a></li>
+          <li><a href="#shortcuts">keyboard shortcuts</a></li>
+          <li><a href="#import-export">import &amp; export</a></li>
+        </ul>
+      </aside>
+
+      <article class="docs-article">
+        <p class="crumbs">getting started / install</p>
+        <h1 id="install">Install</h1>
+        <p class="lede">
+          pinshelf ships as a single container with one volume. Anything that can run
+          Docker can run it: a VPS, a NAS, a Pi on the shelf behind the router. If you'd
+          rather not run a container, the same app deploys to your own Cloudflare account.
+        </p>
+
+        <h2 id="docker-compose">Docker Compose</h2>
+        <p>
+          Drop this compose file next to wherever you keep them, set the secret and the
+          public origin, and bring it up.
+        </p>
+        <div class="codeblock-wrap">
+          <pre class="codeblock">
+services:
+  pinshelf:
+    image: ghcr.io/nxplain-sh/pinshelf:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - pinshelf-data:/data
+    environment:
+      BETTER_AUTH_SECRET: [YOUR-SECRET]
+      BETTER_AUTH_URL: http://[YOUR-HOST]:3000
+    restart: unless-stopped
+
+volumes:
+  pinshelf-data:</pre>
+          <button class="copy" type="button" aria-label="Copy compose file">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="7" y="7" width="9" height="9" rx="1.5" />
+              <path
+                d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="cmd">
+          <code><span class="prompt">$</span> docker compose up -d</code>
+          <button
+            class="copy"
+            type="button"
+            aria-label="Copy command"
+            data-copy="docker compose up -d"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="7" y="7" width="9" height="9" rx="1.5" />
+              <path
+                d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+              />
+            </svg>
+          </button>
+        </div>
+        <p class="panel-note">
+          Generate the secret with <code>openssl rand -base64 32</code>. The container
+          runs the app on workerd with its database and backups under <code>/data</code>,
+          and migrations are applied on start.
+        </p>
+        <a
+          class="btn"
+          href="https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/nxplain-sh/pinshelf/main/compose.yaml&amp;REFERRALCODE=BV0GMAILNSKR"
+          >deploy on hostinger</a
+        >
+
+        <h2 id="cloudflare">Deploy to Cloudflare instead</h2>
+        <p>
+          The same app runs as a Worker with a D1 database and an R2 bucket for daily
+          backups. Use the deploy button, then finish the setup from your machine with
+          <code>make d1-create</code>, <code>make secret-put</code>,
+          <code>make db-migrate-remote</code>, and <code>make deploy</code>.
+        </p>
+        <a
+          class="btn"
+          href="https://deploy.workers.cloudflare.com/?url=https://github.com/nxplain-sh/pinshelf"
+          >deploy to cloudflare</a
+        >
+
+        <h2 id="first-run">First run</h2>
+        <ol class="steps">
+          <li>
+            Open <code>http://[YOUR-HOST]:3000</code>. With no users in the database the
+            login page shows the setup form.
+          </li>
+          <li>
+            Create the single account. The first account becomes the owner; later signups
+            are rejected.
+          </li>
+          <li>Save your first page from the add box, or with the extension shortcut.</li>
+        </ol>
+
+        <h2 id="reverse-proxy">Behind a reverse proxy</h2>
+        <p>
+          Terminate TLS at your proxy and forward to the container port. The PWA needs
+          HTTPS to install, so give it a real certificate rather than a self-signed one.
+          Set <code>BETTER_AUTH_URL</code> to the public origin, or sign-in will redirect
+          to the wrong host.
+        </p>
+        <div class="codeblock-wrap">
+          <pre class="codeblock">
+[YOUR-DOMAIN] {
+  reverse_proxy localhost:[PORT]
+}</pre>
+          <button class="copy" type="button" aria-label="Copy Caddyfile">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="7" y="7" width="9" height="9" rx="1.5" />
+              <path
+                d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7"
+              />
+            </svg>
+          </button>
+        </div>
+        <p class="panel-note">
+          One port serves everything, so there is no separate health endpoint to route:
+          forward the whole site to <code>[PORT]</code>.
+        </p>
+
+        <h2 id="backup-restore">Backup &amp; restore</h2>
+        <p>
+          On Cloudflare a cron writes a JSON snapshot of the library into your R2 bucket
+          every day at 03:00 UTC, and the newest 30 are kept. Self-hosters create the
+          bucket once with <code>make r2-create</code>. Settings → Backups can also write
+          a snapshot on demand, list what exists, restore from one, or delete one.
+        </p>
+        <p>
+          Restoring is additive: missing bookmarks are added, existing ones are untouched,
+          and trashed bookmarks come back trashed. The same JSON file can be restored
+          through the normal import flow.
+        </p>
+        <p>
+          Docker has no cron, so the daily snapshot never fires. Use Settings → Backups →
+          Back up now, and keep a copy of the <code>pinshelf-data</code> volume somewhere
+          off the box — the local backup objects live in that same volume.
+        </p>
+        <div class="callout">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="10" cy="10" r="7.5" />
+            <path d="M10 9v5M10 6.5h.01" />
+          </svg>
+          <p>
+            Stop the container before you copy the volume. A bookmark saved mid-tar is a
+            bookmark you get to save again.
+          </p>
+        </div>
+
+        <h2 id="extension">Browser extension</h2>
+        <p>
+          The extension is a WXT build for Chrome and Firefox. It saves the current page
+          or a right-clicked link through the REST API using an API token.
+        </p>
+        <ol class="steps">
+          <li>
+            In pinshelf, open <code>/settings</code> and create an API token. The key is
+            shown once.
+          </li>
+          <li>Click the extension icon, open its settings, and paste the token.</li>
+          <li>
+            Set the API base URL to <code>http://localhost:3000</code> for local
+            development, or to your instance's origin in production.
+          </li>
+        </ol>
+        <p>
+          The popup shows the current tab's URL and title, comma-separated tags, a
+          collection picker, and a save button that reports saved or already saved.
+          Right-click a page or a link → Save to pinshelf, and the toolbar badge flashes ✓
+          on success and ! on failure. Token and base URL are stored in
+          <code>browser.storage.local</code> and never synced anywhere else.
+        </p>
+        <p>
+          Permissions stay narrow: <code>activeTab</code>, <code>contextMenus</code>,
+          <code>storage</code>, and host access to
+          <code>https://app.pinshelf.app/*</code> and
+          <code>http://localhost:3000/*</code>. No other origin is reachable.
+        </p>
+
+        <h2 id="pwa">Install the PWA</h2>
+        <p>
+          pinshelf ships a web app manifest and a static-asset service worker, so it
+          installs from the browser on Android and desktop, and on iOS through Share → Add
+          to Home Screen. The manifest starts at <code>/</code> in standalone display.
+        </p>
+        <p>
+          Installing needs HTTPS with a trusted certificate, which the reverse proxy setup
+          above provides; localhost is the exception. The service worker caches only
+          static assets — never HTML or API responses — so it never serves a stale page.
+        </p>
+
+        <h2 id="configuration">Configuration</h2>
+        <p>
+          Every install reads a small set of environment variables.
+          <code>BETTER_AUTH_SECRET</code> is required and the container exits without it;
+          the rest have defaults.
+        </p>
+        <ul class="bullets">
+          <li>
+            <code>BETTER_AUTH_SECRET</code> — signs sessions and API keys. Generate one
+            with <code>openssl rand -base64 32</code>.
+          </li>
+          <li>
+            <code>BETTER_AUTH_URL</code> — the public origin, default
+            <code>http://localhost:3000</code>. Set it to the address you actually open,
+            or sign-in redirects to the wrong host.
+          </li>
+          <li>
+            <code>PINSHELF_PORT</code> — published port in <code>compose.yaml</code>,
+            default <code>3000</code>.
+          </li>
+          <li>
+            <code>PINSHELF_DATA_DIR</code> — where the D1 database and local R2 objects
+            persist, default <code>/data</code>, the mounted volume.
+          </li>
+        </ul>
+        <p>
+          The rest lives in Settings: API tokens for the extension and any other client,
+          AI cleanup, backups, import, and export. The API has an interactive reference at
+          <code>/api-docs</code> and an OpenAPI document at
+          <code>/api/openapi.json</code>; every client-facing route takes
+          <code>Authorization: Bearer &lt;token&gt;</code>.
+        </p>
+        <p>
+          AI cleanup is bring-your-own-provider: set a base URL, model, and API key for
+          any endpoint that speaks <code>/chat/completions</code>, including a local
+          Ollama or vLLM. The key is stored in your database and never returned to the
+          browser after saving. The cleanup page proposes duplicate groups to trash plus
+          tags, descriptions, and collections; nothing is applied until you check it, and
+          duplicates go to trash, not deletion.
+        </p>
+
+        <h2 id="shortcuts">Keyboard shortcuts</h2>
+        <p>
+          pinshelf is keyboard-first. These work across the app and are the same on macOS
+          and Windows/Linux unless a shortcut names a modifier.
+        </p>
+        <pre class="codeblock">
+cmd/ctrl + k   command palette
+j / k          move down / up a list
+enter          open
+x              select
+t              trash
+a              archive
+?              shortcut overlay
+esc            close</pre>
+
+        <h2 id="import-export">Import &amp; export</h2>
+        <p>
+          Settings → Import takes four formats, detected by content rather than file
+          extension. Non-http entries such as bookmarklets are skipped, duplicates are
+          skipped by URL, and imports never fetch metadata: titles and descriptions come
+          from the file.
+        </p>
+        <ul class="bullets">
+          <li>
+            <code>html</code> — Chrome, Firefox, Safari, and Raindrop (Backups → HTML).
+            Folders become collections nested as <code>parent/child</code>,
+            <code>TAGS</code> become tags, <code>&lt;DD&gt;</code> lines become
+            descriptions, <code>ADD_DATE</code> becomes the created date, and Raindrop's
+            Unsorted folder maps to no collection.
+          </li>
+          <li>
+            <code>csv</code> — Raindrop export or a spreadsheet. Header-driven:
+            <code>url</code> is required; <code>title</code>, <code>note</code>,
+            <code>excerpt</code>/<code>description</code>, <code>tags</code>,
+            <code>folder</code>/<code>collection</code>, and <code>created</code> (unix or
+            ISO) are used when present.
+          </li>
+          <li>
+            <code>enex</code> — Evernote. One bookmark per note, using
+            <code>&lt;source-url&gt;</code> when present and otherwise the first link in
+            the body; note text becomes notes, <code>&lt;tag&gt;</code> elements become
+            tags, and <code>&lt;created&gt;</code> becomes the created date. Notes without
+            a link are skipped.
+          </li>
+          <li>
+            <code>txt</code> — one URL per line. A trailing title after the URL is kept;
+            <code>#</code> lines are ignored.
+          </li>
+        </ul>
+        <p>
+          Export writes a full JSON backup (including notes) or a Netscape HTML file for
+          other bookmark managers.
+        </p>
+      </article>
+
+      <aside class="docs-toc" aria-label="on this page">
+        <p class="side-group">on this page</p>
+        <ul>
+          <li><a href="#docker-compose">docker compose</a></li>
+          <li><a href="#cloudflare">cloudflare</a></li>
+          <li><a href="#first-run">first run</a></li>
+          <li><a href="#reverse-proxy">reverse proxy</a></li>
+          <li><a href="#backup-restore">backup &amp; restore</a></li>
+          <li><a href="#extension">browser extension</a></li>
+          <li><a href="#pwa">install the pwa</a></li>
+          <li><a href="#configuration">configuration</a></li>
+          <li><a href="#shortcuts">keyboard shortcuts</a></li>
+          <li><a href="#import-export">import &amp; export</a></li>
+        </ul>
+      </aside>
+    </main>
+
+    <footer>
+      <div class="wrap footer-inner">
+        <p class="foot-brand">
+          <svg
+            class="mark"
+            width="22"
+            height="22"
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--ink-faint)" />
+            <circle
+              cx="66"
+              cy="46"
+              r="20"
+              fill="none"
+              stroke="var(--ink-faint)"
+              stroke-width="17"
+            />
+            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--ink-faint)" />
+          </svg>
+          pinshelf · MIT · built under nxplain.sh
+        </p>
+        <nav aria-label="footer">
+          <a href="docs">docs</a>
+          <a href="https://github.com/nxplain-sh/pinshelf/releases">releases</a>
+          <a href="https://github.com/nxplain-sh/pinshelf/issues">issues</a>
+          <a href="https://github.com/nxplain-sh/pinshelf">github</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="site.js" defer></script>
+  </body>
+</html>
