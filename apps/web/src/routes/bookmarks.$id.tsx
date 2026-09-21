@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import {
   createFileRoute,
   Link,
@@ -8,11 +8,15 @@ import {
 } from '@tanstack/react-router'
 import type { FormEvent } from 'react'
 import { useState } from 'react'
+import { SignOut } from '~/components/SignOut'
+import { getAiSettings } from '~/lib/ai'
+import type { AskMode } from '~/lib/ai-schemas'
 import { getBookmark } from '~/lib/bookmarks'
 import {
   queryKeys,
   useAddHighlight,
   useArchivePage,
+  useAskBookmark,
   useCreateShare,
   useDeleteBookmark,
   useHighlights,
@@ -26,6 +30,13 @@ import {
 } from '~/lib/queries'
 import { fetchSession } from '~/lib/session'
 import { listCollections } from '~/lib/taxonomy'
+
+const ASK_ACTIONS: { mode: AskMode; label: string }[] = [
+  { mode: 'summary', label: 'summarise' },
+  { mode: 'takeaways', label: 'key takeaways' },
+  { mode: 'plain', label: 'explain simply' },
+  { mode: 'verdict', label: 'worth reading?' },
+]
 
 export const Route = createFileRoute('/bookmarks/$id')({
   beforeLoad: async () => {
@@ -78,6 +89,17 @@ function BookmarkDetail() {
   const { data: highlights = [] } = useHighlights(id)
   const addHighlight = useAddHighlight(id)
   const removeHighlight = useRemoveHighlight(id)
+  const askBookmark = useAskBookmark(id)
+  const [askAnswer, setAskAnswer] = useState<{
+    text: string
+    source: string
+  } | null>(null)
+  const [askError, setAskError] = useState<string | null>(null)
+  const { data: aiSettings } = useQuery({
+    queryKey: queryKeys.aiSettings,
+    queryFn: () => getAiSettings(),
+    retry: false,
+  })
   const [highlightQuote, setHighlightQuote] = useState('')
   const [highlightNote, setHighlightNote] = useState('')
   const deleteBookmark = useDeleteBookmark()
@@ -114,14 +136,17 @@ function BookmarkDetail() {
         >
           ← pinshelf
         </Link>
-        <a
-          href={bookmark.url}
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
-        >
-          open original ↗
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href={bookmark.url}
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
+          >
+            open original ↗
+          </a>
+          <SignOut />
+        </div>
       </header>
 
       <p className="truncate font-mono text-xs text-ink-faint">{bookmark.url}</p>
@@ -341,6 +366,64 @@ function BookmarkDetail() {
       )}
 
       <section className="flex flex-col gap-2 border-t border-line pt-4">
+        <span className="label">ask</span>
+
+        {aiSettings && !aiSettings.hasApiKey ? (
+          <p className="font-mono text-[11px] text-ink-faint">
+            add an AI provider in{' '}
+            <Link to="/settings" className="text-accent underline underline-offset-4">
+              settings
+            </Link>{' '}
+            to summarise this page
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {ASK_ACTIONS.map((action) => (
+                <button
+                  key={action.mode}
+                  type="button"
+                  className="btn"
+                  disabled={askBookmark.isPending}
+                  onClick={() => {
+                    setAskError(null)
+                    askBookmark.mutate(action.mode, {
+                      onSuccess: (answer) => {
+                        setAskAnswer(answer)
+                        setAskError(null)
+                      },
+                      onError: (cause) => {
+                        setAskAnswer(null)
+                        setAskError(
+                          cause instanceof Error ? cause.message : 'could not ask',
+                        )
+                      },
+                    })
+                  }}
+                >
+                  {askBookmark.isPending && askBookmark.variables === action.mode
+                    ? 'thinking…'
+                    : action.label}
+                </button>
+              ))}
+            </div>
+            {askError && <p className="font-mono text-xs text-danger">{askError}</p>}
+            {askAnswer && (
+              <div className="panel flex flex-col gap-1 p-3">
+                <p className="text-[13px] leading-relaxed whitespace-pre-line">
+                  {askAnswer.text}
+                </p>
+                <span className="font-mono text-[11px] text-ink-faint">
+                  read from{' '}
+                  {askAnswer.source === 'archive' ? 'the snapshot' : askAnswer.source}
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-2 border-t border-line pt-4">
         <span className="label">highlights</span>
 
         <form
@@ -436,7 +519,8 @@ function BookmarkDetail() {
               className="btn"
               onClick={() =>
                 deleteBookmark.mutate(bookmark.id, {
-                  onSuccess: () => void navigate({ to: '/trash' }),
+                  onSuccess: () =>
+                    void navigate({ to: '/archive', search: { status: 'trashed' } }),
                 })
               }
             >

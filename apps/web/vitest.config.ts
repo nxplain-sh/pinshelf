@@ -38,6 +38,19 @@ export default defineConfig({
               })
             }
 
+            if (url.hostname === 'www.youtube.com') {
+              return new Response(
+                `<html><script>var ytInitialPlayerResponse = {"captions":{"playerCaptionsTracklistRenderer":{"captionTracks":[{"baseUrl":"https://captions.test/timedtext?lang=en","languageCode":"en"}]}}};</script></html>`,
+                { headers: { 'content-type': 'text/html; charset=utf-8' } },
+              )
+            }
+
+            if (url.hostname === 'captions.test') {
+              return Response.json({
+                events: [{ segs: [{ utf8: 'hello ' }, { utf8: 'from the transcript' }] }],
+              })
+            }
+
             // Test double for an OpenAI-compatible endpoint. It answers with
             // proposals that reference the ids it was given, so scan and apply
             // can be exercised end to end without a real model.
@@ -56,6 +69,32 @@ export default defineConfig({
                     collections?: string[]
                   })
                 : {}
+
+              // Every prompt shape gets its own answer so the stub stays a
+              // faithful double rather than one shape guessed at.
+              if (payload.intent === 'ask-bookmark') {
+                return Response.json({
+                  choices: [{ message: { content: 'Stub answer about the page.' } }],
+                })
+              }
+
+              if (payload.intent === 'tag-merges') {
+                const names = payload.tags ?? []
+                return Response.json({
+                  choices: [
+                    {
+                      message: {
+                        content: JSON.stringify({
+                          merges:
+                            names.length >= 2
+                              ? [{ from: names[0], into: names[1], reason: 'stub pair' }]
+                              : [],
+                        }),
+                      },
+                    },
+                  ],
+                })
+              }
 
               // Smart search and smart collections get their own shapes so the
               // stub stays a faithful double for each prompt.

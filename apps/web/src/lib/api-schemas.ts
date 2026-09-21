@@ -7,6 +7,8 @@ export const listBookmarksQuerySchema = z.object({
   q: z.string().trim().min(1).max(200).optional(),
   tag: z.string().trim().min(1).max(64).optional(),
   collection: z.string().trim().min(1).max(64).optional(),
+  url: z.string().trim().min(1).max(2048).optional(),
+  host: z.string().trim().min(1).max(255).optional(),
   sort: z.enum(['newest', 'oldest', 'title-asc', 'title-desc', 'manual']).optional(),
 })
 
@@ -32,3 +34,16 @@ export const updateBookmarkSchema = z
 
 export type CreateBookmarkBody = z.infer<typeof createBookmarkSchema>
 export type UpdateBookmarkBody = z.infer<typeof updateBookmarkSchema>
+
+export const createHighlightSchema = z.object({
+  bookmarkId: z.string().min(1).max(64),
+  quote: z.string().trim().min(1).max(20_000),
+  note: z.string().max(10_000).optional(),
+})
+
+export const askBookmarkSchema = z.object({
+  mode: z.enum(['summary', 'takeaways', 'plain', 'verdict']),
+})
+
+export type CreateHighlightBody = z.infer<typeof createHighlightSchema>
+export type AskBookmarkBody = z.infer<typeof askBookmarkSchema>

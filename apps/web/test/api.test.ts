@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
+  handleAskBookmark,
   handleCreateBookmark,
+  handleCreateHighlight,
   handleDeleteBookmark,
   handleGetBookmark,
   handleListBookmarks,
@@ -8,6 +10,7 @@ import {
   handleUpdateBookmark,
 } from '../src/lib/api-handlers.server'
 import { auth } from '../src/lib/auth.server'
+import { saveAiSettings } from '../src/lib/ai.server'
 import { createBookmarkRecord } from '../src/lib/bookmarks.server'
 
 let token = ''
@@ -277,3 +280,69 @@ async function firstBookmarkId(): Promise<string> {
   if (!id) throw new Error('no bookmark available in test state')
   return id
 }
+
+describe('highlights and ask', () => {
+  it('adds a highlight to a bookmark', async () => {
+    const created = await createBookmarkRecord({
+      url: 'https://example.com/highlight-target',
+    })
+    const response = await handleCreateHighlight(
+      request('/api/highlights', {
+        method: 'POST',
+        body: JSON.stringify({
+          bookmarkId: created.bookmark?.id,
+          quote: '  a line worth keeping ',
+        }),
+      }),
+    )
+    expect(response.status).toBe(201)
+    const body = (await response.json()) as { highlight: { quote: string } }
+    expect(body.highlight.quote).toBe('a line worth keeping')
+  })
+
+  it('refuses a highlight on a bookmark that does not exist', async () => {
+    const response = await handleCreateHighlight(
+      request('/api/highlights', {
+        method: 'POST',
+        body: JSON.stringify({ bookmarkId: 'nope', quote: 'x' }),
+      }),
+    )
+    expect(response.status).toBe(404)
+  })
+
+  it('answers an ask request through the configured model', async () => {
+    await saveAiSettings({
+      baseUrl: 'https://ai.test/v1',
+      model: 'test-model',
+      apiKey: 'k',
+    })
+    const created = await createBookmarkRecord({ url: 'https://example.com/ask-api' })
+    const id = created.bookmark?.id as string
+
+    const response = await handleAskBookmark(
+      request(`/api/bookmarks/${id}/ask`, {
+        method: 'POST',
+        body: JSON.stringify({ mode: 'summary' }),
+      }),
+      id,
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { text: string; source: string }
+    expect(body.text).toBe('Stub answer about the page.')
+    expect(['youtube', 'archive', 'metadata']).toContain(body.source)
+  })
+
+  it('rejects an unknown ask mode', async () => {
+    const created = await createBookmarkRecord({
+      url: 'https://example.com/ask-bad-mode',
+    })
+    const response = await handleAskBookmark(
+      request(`/api/bookmarks/${created.bookmark?.id}/ask`, {
+        method: 'POST',
+        body: JSON.stringify({ mode: 'poem' }),
+      }),
+      created.bookmark?.id as string,
+    )
+    expect(response.status).toBe(400)
+  })
+})

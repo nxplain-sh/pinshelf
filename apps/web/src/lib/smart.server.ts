@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { callAi, parseStrictJson } from '~/lib/ai.server'
 import type { BookmarkFilters, BookmarkSort } from '~/lib/bookmarks.types'
+import type { TagMergeSuggestion } from '~/lib/ai-schemas'
 import { listSavedSearches } from '~/lib/saved-searches.server'
 import { queryCollections, queryTags } from '~/lib/taxonomy.server'
 
@@ -189,4 +190,68 @@ export async function suggestSmartCollections(
     })
     .filter((entry): entry is SmartCollectionSuggestion => entry !== null)
     .slice(0, limit)
+}
+
+const mergeShape = z.object({
+  from: z.string().max(64),
+  into: z.string().max(64),
+  reason: z.string().max(200).default(''),
+})
+
+/**
+ * Proposes merges for tags that mean the same thing (`recipe` / `recipes`).
+ * Applying them is the operator's call in the toolbox; this only names pairs
+ * from the real taxonomy, so nothing can be merged into a tag that is not
+ * already there.
+ */
+export async function suggestTagMerges(): Promise<TagMergeSuggestion[]> {
+  const tags = await queryTags()
+  if (tags.length < 2) return []
+
+  const known = tags.slice(0, MAX_TAGS_IN_PROMPT)
+  const content = await callAi([
+    {
+      role: 'system',
+      content: [
+        'You tidy the tag list of a bookmark library.',
+        'Return STRICT JSON, no prose, no code fences:',
+        '{"merges":[{"from":"tag to drop","into":"tag to keep","reason":"one short sentence"}]}',
+        'Rules:',
+        '- Only pair tags that mean the same thing: plurals, typos, punctuation, synonyms.',
+        '- Both names must come from the provided list; never invent a tag.',
+        '- Keep the more common or clearer name as "into".',
+        '- Each "from" may appear once; return at most 20 pairs, fewer when unsure.',
+      ].join('\n'),
+    },
+    {
+      role: 'user',
+      content: JSON.stringify({ intent: 'tag-merges', tags: known.map((t) => t.name) }),
+    },
+  ])
+
+  const parsed = z
+    .object({ merges: z.array(mergeShape).max(50).default([]) })
+    .safeParse(parseStrictJson(content))
+  if (!parsed.success) throw new Error('The model did not return usable tag merges')
+
+  const byName = new Map(known.map((tag) => [tag.name.toLowerCase(), tag]))
+  const seen = new Set<string>()
+
+  return parsed.data.merges
+    .map((entry) => {
+      const from = byName.get(entry.from.trim().toLowerCase())
+      const into = byName.get(entry.into.trim().toLowerCase())
+      if (!from || !into || from.id === into.id) return null
+      if (seen.has(from.id)) return null
+      seen.add(from.id)
+      return {
+        fromId: from.id,
+        from: from.name,
+        intoId: into.id,
+        into: into.name,
+        reason: cleanText(entry.reason, 200) ?? '',
+      }
+    })
+    .filter((entry): entry is TagMergeSuggestion => entry !== null)
+    .slice(0, 20)
 }

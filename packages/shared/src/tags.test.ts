@@ -15,8 +15,9 @@ describe('normalizeTagName', () => {
     expect(normalizeTagName('x'.repeat(64))).toBe('x'.repeat(64))
   })
 
-  it('preserves inner case for display', () => {
-    expect(normalizeTagName('iOS')).toBe('iOS')
+  it('lowercases, so names are stored as they are matched', () => {
+    expect(normalizeTagName('iOS')).toBe('ios')
+    expect(normalizeTagName('  Deep Work  ')).toBe('deep work')
   })
 })
 

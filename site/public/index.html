@@ -6,12 +6,12 @@
     <title>pinshelf — your bookmarks, on a shelf only you can reach</title>
     <meta
       name="description"
-      content="Self-hosted bookmark manager. Save a page, keep it organised, find it again later. Runs on your own Cloudflare account."
+      content="Self-hosted bookmark manager. pin it, shelf it, find it. Docker compose, or Cloudflare if you would rather not run a server."
     />
     <meta property="og:title" content="pinshelf" />
     <meta
       property="og:description"
-      content="Self-hosted bookmark manager. Save a page, keep it organised, find it again later."
+      content="Self-hosted bookmark manager. pin it, shelf it, find it."
     />
     <meta property="og:image" content="https://pinshelf.app/assets/social-card.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -80,8 +80,8 @@
         <p class="eyebrow">self-hosted · single user · open source</p>
         <h1>Your bookmarks, on a shelf only you can reach.</h1>
         <p class="lede">
-          Save a page, keep it organised, find it again later. pinshelf runs on your own
-          Cloudflare account — no account to create anywhere but your own instance.
+          pin it, shelf it, find it. docker compose up on a box you own — or deploy to
+          Cloudflare if you would rather not run a server.
         </p>
         <div class="cta">
           <a class="btn btn-primary" href="#self-host">get started</a>
@@ -117,112 +117,153 @@
 
       <section class="wrap">
         <div class="shot" aria-hidden="true">
-          <div class="shot-bar">
-            <svg
-              class="mark"
-              width="20"
-              height="20"
-              viewBox="0 0 120 120"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
-              <circle
-                cx="66"
-                cy="46"
-                r="20"
-                fill="none"
-                stroke="var(--steel)"
-                stroke-width="17"
-              />
-              <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
-            </svg>
-            <span class="shot-search">rust</span>
-            <span class="btn btn-quiet">add</span>
-            <span class="btn btn-quiet">settings</span>
-          </div>
-          <div class="shot-body">
-            <div class="shot-rail">
-              <ul>
-                <li class="active"><span>all</span><span class="count">128</span></li>
-                <li><span>reading</span><span class="count">24</span></li>
-                <li><span>ops</span><span class="count">17</span></li>
-                <li><span>design</span><span class="count">9</span></li>
-                <li><span>trash</span><span class="count">3</span></li>
-              </ul>
-              <p class="rail-label">tags</p>
-              <ul class="shot-tags">
-                <li class="active">rust</li>
-                <li>linux</li>
-                <li>db</li>
-                <li>notes</li>
-              </ul>
+          <div class="shot-app">
+            <header class="shot-header">
+              <div class="shot-identity">
+                <svg
+                  class="mark"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 120 120"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="12"
+                    y="78"
+                    width="96"
+                    height="14"
+                    rx="7"
+                    fill="var(--accent)"
+                  />
+                  <circle
+                    cx="66"
+                    cy="46"
+                    r="20"
+                    fill="none"
+                    stroke="var(--steel)"
+                    stroke-width="17"
+                  />
+                  <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+                </svg>
+                <span class="shot-wordmark">pinshelf</span>
+                <span class="shot-user">you@example.com</span>
+              </div>
+              <nav class="shot-nav">
+                <span>archive</span>
+                <span>collections</span>
+                <span>tags</span>
+                <span>insights</span>
+                <span>settings</span>
+                <span>sign out</span>
+              </nav>
+            </header>
+
+            <div class="shot-form-row">
+              <span class="shot-field">https://example.com/article</span>
+              <span class="shot-btn shot-btn-primary">Save</span>
             </div>
+
+            <div class="shot-form-row">
+              <span class="shot-field">rust</span>
+              <span class="shot-btn">search</span>
+              <span class="shot-btn">smart</span>
+            </div>
+
+            <div class="shot-filters">
+              <span class="shot-select">all bookmarks</span>
+              <span class="shot-select">newest first</span>
+              <span class="shot-chip shot-chip-active">rust</span>
+              <span class="shot-chip">linux</span>
+              <span class="shot-chip">db</span>
+              <span class="shot-clear">clear filters</span>
+            </div>
+
+            <p class="shot-selectall"><span class="shot-checkbox"></span>select all 4</p>
+
             <ul class="shot-list">
               <li>
-                <div class="row-main">
-                  <span class="row-title">Ownership, borrowing and lifetimes</span>
-                  <span class="row-meta">doc.rust-lang.org · 2d ago</span>
+                <span class="shot-favicon">d</span>
+                <div class="shot-row">
+                  <div class="shot-row-head">
+                    <span class="shot-title">Ownership, borrowing and lifetimes</span>
+                    <span class="shot-meta">doc.rust-lang.org</span>
+                    <span class="shot-collection">/rust</span>
+                  </div>
+                  <div class="shot-row-tags">
+                    <span class="shot-chip">rust</span>
+                    <span class="shot-chip">ownership</span>
+                  </div>
                 </div>
-                <div class="row-tags">
-                  <span class="chip">rust</span>
-                  <span class="chip">ownership</span>
-                </div>
-              </li>
-              <li>
-                <div class="row-main">
-                  <span class="row-title">Error handling patterns worth stealing</span>
-                  <span class="row-meta">blog.example.dev · 5d ago</span>
-                </div>
-                <div class="row-tags">
-                  <span class="chip">rust</span>
-                  <span class="chip">errors</span>
-                </div>
-              </li>
-              <li>
-                <div class="row-main">
-                  <span class="row-title">Async runtimes, compared</span>
-                  <span class="row-meta">wiki.example.org · 1w ago</span>
-                </div>
-                <div class="row-tags">
-                  <span class="chip">rust</span>
-                  <span class="chip">async</span>
+                <div class="shot-actions">
+                  <span class="shot-btn shot-btn-quiet">open</span>
+                  <span class="shot-btn shot-btn-quiet">archive</span>
+                  <span class="shot-btn shot-btn-quiet">trash</span>
                 </div>
               </li>
               <li>
-                <div class="row-main">
-                  <span class="row-title">Notes on writing a parser by hand</span>
-                  <span class="row-meta row-warn">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 120 120"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                    >
-                      <rect
-                        x="12"
-                        y="78"
-                        width="96"
-                        height="14"
-                        rx="7"
-                        fill="var(--ink-faint)"
-                      />
-                      <circle
-                        cx="66"
-                        cy="46"
-                        r="20"
-                        fill="none"
-                        stroke="var(--ink-faint)"
-                        stroke-width="17"
-                      />
-                      <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--ink-faint)" />
-                    </svg>
-                    metadata fetch failed · retry
-                  </span>
+                <span class="shot-favicon">b</span>
+                <div class="shot-row">
+                  <div class="shot-row-head">
+                    <span class="shot-title">Error handling patterns worth stealing</span>
+                    <span class="shot-meta">blog.example.dev</span>
+                  </div>
+                  <div class="shot-row-tags">
+                    <span class="shot-chip">rust</span>
+                    <span class="shot-chip">errors</span>
+                  </div>
                 </div>
-                <div class="row-tags">
-                  <span class="chip">parser</span>
+              </li>
+              <li>
+                <span class="shot-favicon">w</span>
+                <div class="shot-row">
+                  <div class="shot-row-head">
+                    <span class="shot-title">Async runtimes, compared</span>
+                    <span class="shot-meta">wiki.example.org</span>
+                    <span class="shot-collection">/ops</span>
+                  </div>
+                  <div class="shot-row-tags">
+                    <span class="shot-chip">rust</span>
+                    <span class="shot-chip">async</span>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <svg
+                  class="shot-fallback"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 120 120"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="12"
+                    y="78"
+                    width="96"
+                    height="14"
+                    rx="7"
+                    fill="var(--ink-faint)"
+                  />
+                  <circle
+                    cx="66"
+                    cy="46"
+                    r="20"
+                    fill="none"
+                    stroke="var(--ink-faint)"
+                    stroke-width="17"
+                  />
+                  <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--ink-faint)" />
+                </svg>
+                <div class="shot-row">
+                  <div class="shot-row-head">
+                    <span class="shot-title">Notes on writing a parser by hand</span>
+                    <span class="shot-meta">journal.example.net</span>
+                  </div>
+                  <div class="shot-row-tags">
+                    <span class="shot-chip">parser</span>
+                  </div>
+                  <p class="shot-warn">metadata fetch failed</p>
                 </div>
               </li>
             </ul>
@@ -254,8 +295,8 @@
             </svg>
             <h3>Save in one click</h3>
             <p>
-              The extension grabs the page you're on. Title and favicon are fetched for
-              you.
+              The extension grabs the page you're on, every open tab, or a highlighted
+              passage — and badges the tabs already on your shelf.
             </p>
           </li>
           <li class="card">
@@ -336,6 +377,72 @@
               stroke-linejoin="round"
               aria-hidden="true"
             >
+              <path d="M5 3h7l3 3v11H5z" />
+              <path d="M10 9h4M10 12h4" />
+            </svg>
+            <h3>Snapshots and preview</h3>
+            <p>
+              Keep the page as it was, then read it in a small window even when the site
+              refuses to be framed.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 8h14v9H3z" />
+              <path d="M7 8V5h6v3M10 11v3" />
+            </svg>
+            <h3>A toolbox, your model</h3>
+            <p>
+              Cleanup scans, tag merges, and page summaries via any OpenAI-compatible
+              endpoint — or none at all.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 3v6a3 3 0 0 0 6 0V3" />
+              <path d="M10 12v5" />
+            </svg>
+            <h3>Open to your tools</h3>
+            <p>
+              A token-scoped REST API and an MCP endpoint, so scripts and assistants use
+              the same shelf you do.
+            </p>
+          </li>
+          <li class="card">
+            <svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <rect x="6" y="3" width="8" height="14" rx="1.5" />
               <path d="M10 14.5h.01" />
             </svg>
@@ -382,6 +489,7 @@
             <ul class="bullets">
               <li>data lives in a single volume you can tar</li>
               <li>export everything as JSON or HTML whenever you want</li>
+              <li>page snapshots and daily JSON backups in the same volume</li>
               <li>no telemetry, no third-party fonts, no external requests</li>
             </ul>
             <a class="link" href="docs">read the install docs →</a>
@@ -568,7 +676,10 @@ volumes:
           <li>
             <p class="num">01 / browser</p>
             <h3>The extension</h3>
-            <p>Chrome and Firefox. One shortcut, tags before you forget them.</p>
+            <p>
+              Chrome and Firefox. Save a tab, all tabs, or a highlight; search from the
+              address bar; badge what is already saved.
+            </p>
           </li>
           <li>
             <p class="num">02 / phone</p>

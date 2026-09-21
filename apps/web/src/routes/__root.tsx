@@ -3,6 +3,7 @@ import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/reac
 import type { QueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { Toolbox } from '~/components/Toolbox'
 import { CommandPalette } from '~/components/CommandPalette'
 import appCss from '~/styles/app.css?url'
 
@@ -49,6 +50,15 @@ function RootDocument({ children }: { children: ReactNode }) {
       <body className="min-h-screen">
         {children}
         <CommandPalette />
+        <Toolbox />
+        <a
+          href="https://pinshelf.app/docs"
+          target="_blank"
+          rel="noreferrer"
+          className="btn fixed bottom-5 left-5 z-40 border-accent/50 bg-surface text-accent"
+        >
+          docs
+        </a>
         <Scripts />
       </body>
     </html>

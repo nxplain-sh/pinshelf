@@ -3,19 +3,20 @@ import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-rout
 import { useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { authClient } from '~/lib/auth'
+import { SignOut } from '~/components/SignOut'
 import { TwoFactorSetup } from '~/components/TwoFactorSetup'
 import { exportJson, exportMarkdown, exportNetscape } from '~/lib/import-export'
 import { getAiSettings } from '~/lib/ai'
 import { getBackups } from '~/lib/backup'
+import { autoArchive as autoArchiveSetting } from '~/lib/library'
 import {
   queryKeys,
   useClearAiKey,
   useCreateApiToken,
   useImportBookmarks,
-  useMergeTag,
-  useRenameTag,
   useRevokeApiToken,
   useBackupNow,
+  useSaveAutoArchive,
   useRemoveBackup,
   useRestoreBackup,
   useSaveAiSettings,
@@ -23,7 +24,6 @@ import {
   useUpdateBackupRetention,
 } from '~/lib/queries'
 import { fetchSession } from '~/lib/session'
-import { listTags } from '~/lib/taxonomy'
 import { listApiTokens } from '~/lib/tokens'
 
 export const Route = createFileRoute('/settings')({
@@ -48,6 +48,10 @@ export const Route = createFileRoute('/settings')({
         queryKey: queryKeys.backups,
         queryFn: () => getBackups(),
       }),
+      context.queryClient.ensureQueryData({
+        queryKey: queryKeys.autoArchive,
+        queryFn: async () => (await autoArchiveSetting()).enabled,
+      }),
     ])
   },
   component: SettingsPage,
@@ -68,17 +72,12 @@ function SettingsPage() {
     queryKey: queryKeys.backups,
     queryFn: () => getBackups(),
   })
-  const { data: tags } = useSuspenseQuery({
-    queryKey: queryKeys.tags,
-    queryFn: () => listTags(),
-  })
-  const renameTag = useRenameTag()
-  const mergeTag = useMergeTag()
-  const [tagNames, setTagNames] = useState<Record<string, string>>({})
-  const [mergeFrom, setMergeFrom] = useState('')
-  const [mergeInto, setMergeInto] = useState('')
-  const [tagMessage, setTagMessage] = useState<string | null>(null)
   const backupNow = useBackupNow()
+  const saveAutoArchive = useSaveAutoArchive()
+  const { data: autoArchive } = useSuspenseQuery({
+    queryKey: queryKeys.autoArchive,
+    queryFn: async () => (await autoArchiveSetting()).enabled,
+  })
   const restoreBackup = useRestoreBackup()
   const removeBackup = useRemoveBackup()
   const updateRetention = useUpdateBackupRetention()
@@ -205,6 +204,7 @@ function SettingsPage() {
             api reference
           </Link>
           <span className="font-mono text-xs text-ink-faint">settings</span>
+          <SignOut />
         </div>
       </header>
 
@@ -212,7 +212,7 @@ function SettingsPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-sm font-medium">API tokens</h2>
           <p className="font-mono text-[11px] text-ink-faint">
-            used by the browser extension and any other client
+            for the extension and other clients
           </p>
         </div>
 
@@ -282,7 +282,7 @@ function SettingsPage() {
         )}
 
         {tokens.length === 0 ? (
-          <p className="border border-dashed border-line py-8 text-center font-mono text-xs text-ink-faint">
+          <p className="border border-dashed border-line py-6 text-center font-mono text-xs text-ink-faint">
             no tokens yet
           </p>
         ) : (
@@ -325,8 +325,8 @@ function SettingsPage() {
           <h2 className="text-sm font-medium">Two-factor</h2>
           <p className="font-mono text-[11px] text-ink-faint">
             {session.user.twoFactorEnabled
-              ? 'enabled — sign-in asks for a code from your authenticator'
-              : 'add a TOTP code from any authenticator app on top of your password'}
+              ? 'enabled — sign-in asks for a code'
+              : 'adds a TOTP code on top of your password'}
           </p>
         </div>
 
@@ -353,12 +353,7 @@ function SettingsPage() {
       </section>
 
       <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Sessions</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            every device signed into this instance
-          </p>
-        </div>
+        <h2 className="text-sm font-medium">Sessions</h2>
 
         <ul className="flex flex-col gap-1.5">
           {sessions.map((item) => (
@@ -418,9 +413,9 @@ function SettingsPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-sm font-medium">AI</h2>
           <p className="font-mono text-[11px] text-ink-faint">
-            any OpenAI-compatible endpoint · used by the cleanup page to find duplicates
-            and suggest tags and descriptions · the key is stored in your database and
-            never sent to the browser again
+            {aiSettings.hasApiKey && aiSettings.model && aiSettings.baseUrl
+              ? `configured: ${aiSettings.model} at ${aiSettings.baseUrl}`
+              : 'openai-compatible endpoint · used by the toolbox · key stays in your database'}
           </p>
         </div>
 
@@ -504,11 +499,6 @@ function SettingsPage() {
 
           {aiError && <p className="font-mono text-xs text-danger">{aiError}</p>}
           {aiMessage && <p className="font-mono text-xs text-accent">{aiMessage}</p>}
-          <p className="font-mono text-[11px] text-ink-faint">
-            {aiSettings.hasApiKey && aiSettings.model && aiSettings.baseUrl
-              ? `configured: ${aiSettings.model} at ${aiSettings.baseUrl}`
-              : 'not configured'}
-          </p>
         </form>
       </section>
 
@@ -516,9 +506,7 @@ function SettingsPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-sm font-medium">Backups</h2>
           <p className="font-mono text-[11px] text-ink-faint">
-            json snapshots in your own R2 bucket · one is written daily at 03:00 UTC · the
-            newest {backupState.retention} are kept · restoring adds what is missing and
-            never overwrites existing bookmarks
+            daily at 03:00 UTC · restoring only adds bookmarks that are missing
           </p>
         </div>
 
@@ -536,10 +524,18 @@ function SettingsPage() {
               </option>
             ))}
           </select>
-          <span className="font-mono text-[11px] text-ink-faint">
-            schedule is fixed at deploy time in wrangler.jsonc
-          </span>
         </div>
+
+        <label className="flex items-center gap-2 font-mono text-xs text-ink-muted">
+          <input
+            type="checkbox"
+            checked={autoArchive}
+            disabled={saveAutoArchive.isPending}
+            onChange={(event) => saveAutoArchive.mutate(event.target.checked)}
+            className="checkbox h-3.5 w-3.5"
+          />
+          snapshot every new save
+        </label>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -631,11 +627,10 @@ function SettingsPage() {
 
       <section className="flex flex-col gap-3 border-t border-line pt-5">
         <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Import</h2>
+          <h2 className="text-sm font-medium">Import / export</h2>
           <p className="font-mono text-[11px] text-ink-faint">
-            html (chrome, firefox, safari, raindrop) · csv · enex (evernote) · txt ·
-            nested folders become "parent/child" collections · metadata is not fetched on
-            import
+            html · csv · enex · txt · json · netscape html · markdown · folders become
+            collections
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -654,125 +649,6 @@ function SettingsPage() {
           <p className="font-mono text-xs text-accent">{importSummary}</p>
         )}
         {importError && <p className="font-mono text-xs text-danger">{importError}</p>}
-      </section>
-
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Tags</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            rename a tag, or merge one into another when they mean the same thing
-          </p>
-        </div>
-
-        <ul className="flex flex-col gap-2">
-          {tags.map((tag) => (
-            <li key={tag.id} className="flex items-center gap-2">
-              <input
-                value={tagNames[tag.id] ?? tag.name}
-                onChange={(event) =>
-                  setTagNames((current) => ({ ...current, [tag.id]: event.target.value }))
-                }
-                aria-label={`Rename ${tag.name}`}
-                className="field flex-1 font-mono"
-              />
-              <button
-                type="button"
-                className="btn"
-                disabled={
-                  renameTag.isPending ||
-                  (tagNames[tag.id] ?? tag.name).trim() === tag.name
-                }
-                onClick={() => {
-                  setTagMessage(null)
-                  renameTag.mutate(
-                    { id: tag.id, name: tagNames[tag.id] ?? tag.name },
-                    {
-                      onSuccess: (result) => {
-                        setTagNames((current) => {
-                          const next = { ...current }
-                          delete next[tag.id]
-                          return next
-                        })
-                        setTagMessage(result.error ?? `renamed to "${result.tag?.name}"`)
-                      },
-                    },
-                  )
-                }}
-              >
-                rename
-              </button>
-            </li>
-          ))}
-          {tags.length === 0 && (
-            <li className="font-mono text-[11px] text-ink-faint">no tags yet</li>
-          )}
-        </ul>
-
-        {tags.length > 1 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={mergeFrom}
-              onChange={(event) => setMergeFrom(event.target.value)}
-              aria-label="Merge this tag"
-              className="field font-mono"
-            >
-              <option value="">merge this…</option>
-              {tags.map((tag) => (
-                <option key={tag.id} value={tag.id}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
-            <span className="font-mono text-xs text-ink-faint">into</span>
-            <select
-              value={mergeInto}
-              onChange={(event) => setMergeInto(event.target.value)}
-              aria-label="Into this tag"
-              className="field font-mono"
-            >
-              <option value="">…into this</option>
-              {tags
-                .filter((tag) => tag.id !== mergeFrom)
-                .map((tag) => (
-                  <option key={tag.id} value={tag.id}>
-                    {tag.name}
-                  </option>
-                ))}
-            </select>
-            <button
-              type="button"
-              className="btn"
-              disabled={mergeTag.isPending || !mergeFrom || !mergeInto}
-              onClick={() => {
-                setTagMessage(null)
-                mergeTag.mutate(
-                  { fromId: mergeFrom, intoId: mergeInto },
-                  {
-                    onSuccess: (result) => {
-                      setMergeFrom('')
-                      setMergeInto('')
-                      setTagMessage(result.error ?? `merged ${result.moved} bookmarks`)
-                    },
-                  },
-                )
-              }}
-            >
-              merge
-            </button>
-          </div>
-        )}
-
-        {tagMessage && <p className="font-mono text-xs text-ink-muted">{tagMessage}</p>}
-      </section>
-
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Export</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            full backup as json, netscape html for other bookmark managers, or a markdown
-            reading list
-          </p>
-        </div>
         <div className="flex items-center gap-2">
           <button type="button" className="btn" onClick={() => void download(exportJson)}>
             download json

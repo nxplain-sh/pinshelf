@@ -17,6 +17,31 @@ Open http://localhost:3000. With zero users in the local database, the login pag
 
 Vitest is pinned to v4 across the workspace because `@cloudflare/vitest-plugin` peers on `^4.1.0`. Bump it only when the plugin supports a newer major.
 
+## Branching and releases
+
+`development` is the integration branch and `main` is the release branch. Both are protected: no direct pushes, every change lands through a pull request, including from maintainers.
+
+- Branch from `development` with a short, typed name: `feat/toolbox-drawer`, `fix/signout-origin`, `docs/branching`.
+- Open the pull request against `development`. CI (`format, build, types, tests`) and the Docker build must pass; keep the branch rebased on `development` rather than merging it back in, so history stays linear.
+- `development` may be merged at any time; it is not expected to be releasable every minute.
+
+Releasing:
+
+1. Open a pull request from `development` to `main` titled after the release, for example `release: 0.2.0`. The full CI matrix runs on it, and `main` only ever receives release merges.
+2. In the same pull request, move the `[Unreleased]` entries in [CHANGELOG.md](CHANGELOG.md) under `## [X.Y.Z] - YYYY-MM-DD` and leave a fresh empty `[Unreleased]` section. Versions follow [SemVer](https://semver.org): breaking changes bump the major, features the minor, fixes the patch.
+3. Merge the pull request once green, then tag the merge commit on `main` and push the tag:
+
+   ```bash
+   git checkout main && git pull
+   git tag -a v0.2.0 -m "pinshelf 0.2.0"
+   git push origin v0.2.0
+   ```
+
+4. The tag does three things: `.github/workflows/release.yml` publishes a GitHub release with generated notes, `.github/workflows/docker.yml` builds and signs `ghcr.io/nxplain-sh/pinshelf:v0.2.0`, and `latest` keeps tracking `main`.
+5. Fast-forward `development` to `main` (`git checkout development && git merge --ff-only main && git push`) so the next cycle starts from the release commit.
+
+Hotfixes take the same path with a `fix/` branch off `main`, merged back into both `main` (patch tag) and `development`.
+
 ## Before opening a pull request
 
 Run the same checks CI runs:
@@ -24,6 +49,7 @@ Run the same checks CI runs:
 ```bash
 pnpm format:check
 pnpm lint
+pnpm --filter @pinshelf/site check
 pnpm build typecheck test
 ```
 

@@ -8,8 +8,10 @@ describe('openapi document', () => {
     expect(Object.keys(document.paths).sort()).toEqual([
       '/api/bookmarks',
       '/api/bookmarks/{id}',
+      '/api/bookmarks/{id}/ask',
       '/api/collections',
       '/api/health',
+      '/api/highlights',
       '/api/tags',
     ])
     expect(document.security).toEqual([{ bearerAuth: [] }])

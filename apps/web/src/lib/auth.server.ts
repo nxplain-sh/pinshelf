@@ -24,6 +24,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  // Vite picks the first free port and the container publishes its own, so in
+  // dev the browser origin rarely matches BETTER_AUTH_URL and every auth POST
+  // fails the origin check. Trust any localhost origin in dev only; production
+  // trusts BETTER_AUTH_URL alone.
+  trustedOrigins: import.meta.env.DEV
+    ? (request) => {
+        const origin = request?.headers.get('origin') ?? ''
+        return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ? [origin] : []
+      }
+    : [],
   // Stored in D1 rather than memory, so a limit survives isolate recycling.
   // Sign-in and the second factor get tight limits; everything else is loose
   // because this is a single-user instance talking to itself.

@@ -1,7 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
-import { archiveBookmarkPage } from '~/lib/archive.server'
+import { archiveBookmarkPage, getAutoArchive, setAutoArchive } from '~/lib/archive.server'
 import { createHighlight, deleteHighlight, listHighlights } from '~/lib/highlights.server'
 import { getInsights } from '~/lib/insights.server'
+import { readBookmarkPage } from '~/lib/reader.server'
 import {
   createSavedSearch,
   deleteSavedSearch,
@@ -20,6 +21,20 @@ export const archiveBookmark = createServerFn({ method: 'POST' })
   .middleware([requireSession])
   .validator((input: unknown) => ({ id: requireString(input, 'id') }))
   .handler(async ({ data }) => archiveBookmarkPage(data.id))
+
+export const autoArchive = createServerFn({ method: 'GET' })
+  .middleware([requireSession])
+  .handler(async () => ({ enabled: await getAutoArchive() }))
+
+export const saveAutoArchive = createServerFn({ method: 'POST' })
+  .middleware([requireSession])
+  .validator((input: unknown) => ({ enabled: asRecord(input).enabled === true }))
+  .handler(async ({ data }) => ({ enabled: await setAutoArchive(data.enabled) }))
+
+export const readBookmark = createServerFn({ method: 'POST' })
+  .middleware([requireSession])
+  .validator((input: unknown) => ({ id: requireString(input, 'id') }))
+  .handler(async ({ data }) => readBookmarkPage(data.id))
 
 export const insights = createServerFn({ method: 'GET' })
   .middleware([requireSession])

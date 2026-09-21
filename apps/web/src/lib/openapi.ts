@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import {
+  askBookmarkSchema,
   createBookmarkSchema,
+  createHighlightSchema,
   listBookmarksQuerySchema,
   updateBookmarkSchema,
 } from '~/lib/api-schemas'
@@ -117,6 +119,18 @@ export function buildOpenApiDocument(origin: string) {
             },
             { name: 'tag', in: 'query', schema: { type: 'string' } },
             {
+              name: 'url',
+              in: 'query',
+              description: 'Exact url match after normalization',
+              schema: { type: 'string' },
+            },
+            {
+              name: 'host',
+              in: 'query',
+              description: 'Exact host match, without `www.`',
+              schema: { type: 'string' },
+            },
+            {
               name: 'collection',
               in: 'query',
               description:
@@ -175,6 +189,63 @@ export function buildOpenApiDocument(origin: string) {
             400: badRequest,
             401: unauthorized,
             403: forbidden,
+          },
+        },
+      },
+      '/api/highlights': {
+        post: {
+          tags: ['bookmarks'],
+          summary: 'Add a highlight to a bookmark',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: z.toJSONSchema(createHighlightSchema, { io: 'input' }),
+              },
+            },
+          },
+          responses: {
+            201: jsonResponse('Highlight created', {
+              type: 'object',
+              required: ['highlight'],
+              properties: { highlight: { type: 'object' } },
+            }),
+            400: badRequest,
+            401: unauthorized,
+            403: forbidden,
+            404: notFound,
+          },
+        },
+      },
+      '/api/bookmarks/{id}/ask': {
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        post: {
+          tags: ['bookmarks'],
+          summary: 'Ask the configured model about one bookmark',
+          description:
+            'Answers from the page snapshot when one exists, from the YouTube transcript for video bookmarks, and from stored metadata otherwise. Requires an AI provider in settings.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: z.toJSONSchema(askBookmarkSchema, { io: 'input' }),
+              },
+            },
+          },
+          responses: {
+            200: jsonResponse('Answer text plus the source it was read from', {
+              type: 'object',
+              required: ['text', 'source'],
+              properties: {
+                text: { type: 'string' },
+                source: { type: 'string', enum: ['youtube', 'archive', 'metadata'] },
+              },
+            }),
+            400: badRequest,
+            401: unauthorized,
+            404: notFound,
           },
         },
       },
