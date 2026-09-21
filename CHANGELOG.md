@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+## [0.2.0] - 2026-09-21
+
+### Added
+
 - Static site in `site/`: landing page, install docs, and a 404 page, served from `pinshelf.app` as a Worker that adds security headers (`make site-dev`, `make site-deploy`).
 - An `archived` bookmark status alongside `active` and `trashed`, with an archived view, row actions, and API support.
 - Keyboard-first navigation: a `cmd/ctrl + k` command palette, `j`/`k`/`enter`/`x`/`t`/`a` list shortcuts, and a `?` shortcut overlay.
