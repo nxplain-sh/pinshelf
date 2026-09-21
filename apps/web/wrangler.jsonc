@@ -30,6 +30,11 @@
   "vars": {
     "BETTER_AUTH_URL": "https://app.pinshelf.app",
   },
+  // BETTER_AUTH_SECRET comes from `make secret-put` in production and from
+  // .dev.vars locally. Listing it here types it for `wrangler types` (the
+  // generated Env must not depend on a local file) and makes `wrangler dev`
+  // warn when it is missing.
+  "secrets": { "required": ["BETTER_AUTH_SECRET"] },
   // The apex serves the static site (see site/ and ADR-0015); the app answers
   // on its own hostname.
   "routes": [{ "pattern": "app.pinshelf.app", "custom_domain": true }],
