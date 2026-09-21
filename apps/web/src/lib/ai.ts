@@ -3,18 +3,23 @@ import { z } from 'zod'
 import { aiProposalSchema } from '~/lib/ai-schemas'
 import {
   applyProposals,
+  askBookmark as askBookmarkPage,
   callAi,
   clearAiApiKey,
   getAiSettingsView,
   saveAiSettings,
   scanForCleanup,
 } from '~/lib/ai.server'
+import type { AskMode } from '~/lib/ai-schemas'
 import { asRecord, optionalString, requireString } from '~/lib/validate'
 import { requireSession } from '~/lib/require-session'
 import {
   interpretSearch,
   suggestSmartCollections as suggestCollections,
+  suggestTagMerges as suggestTagMergesFromTags,
 } from '~/lib/smart.server'
+
+const ASK_MODES: AskMode[] = ['summary', 'takeaways', 'plain', 'verdict']
 
 function httpUrl(value: string): string {
   let url: URL
@@ -114,3 +119,18 @@ export const suggestSmartCollections = createServerFn({ method: 'POST' })
     return { limit: Math.min(Math.max(Math.trunc(limit), 1), 8) }
   })
   .handler(async ({ data }) => suggestCollections(data.limit))
+
+export const askBookmark = createServerFn({ method: 'POST' })
+  .middleware([requireSession])
+  .validator((input: unknown) => {
+    const mode = asRecord(input).mode
+    if (typeof mode !== 'string' || !ASK_MODES.includes(mode as AskMode)) {
+      throw new Error(`Expected "mode" to be one of: ${ASK_MODES.join(', ')}`)
+    }
+    return { id: requireString(input, 'id'), mode: mode as AskMode }
+  })
+  .handler(async ({ data }) => askBookmarkPage(data.id, data.mode))
+
+export const suggestTagMerges = createServerFn({ method: 'POST' })
+  .middleware([requireSession])
+  .handler(async () => suggestTagMergesFromTags())

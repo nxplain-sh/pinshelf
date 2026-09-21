@@ -57,3 +57,35 @@ export function saveBookmark(input: {
 export function fetchCollections() {
   return request<{ collections: Collection[] }>('/api/collections')
 }
+
+export type BookmarkMatch = { id: string; url: string; title: string | null }
+
+export function findSaved(url: string) {
+  const query = new URLSearchParams({ url, status: 'active' })
+  return request<{ bookmarks: BookmarkMatch[] }>(`/api/bookmarks?${query}`)
+}
+
+export function searchBookmarks(term: string) {
+  const query = new URLSearchParams({ q: term, status: 'active' })
+  return request<{ bookmarks: BookmarkMatch[] }>(`/api/bookmarks?${query}`)
+}
+
+export type AskMode = 'summary' | 'takeaways' | 'plain' | 'verdict'
+
+export function createHighlight(input: {
+  bookmarkId: string
+  quote: string
+  note?: string
+}) {
+  return request<{ highlight: { id: string } }>('/api/highlights', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  })
+}
+
+export function askBookmark(id: string, mode: AskMode) {
+  return request<{ text: string; source: 'youtube' | 'archive' | 'metadata' }>(
+    `/api/bookmarks/${id}/ask`,
+    { method: 'POST', body: JSON.stringify({ mode }) },
+  )
+}

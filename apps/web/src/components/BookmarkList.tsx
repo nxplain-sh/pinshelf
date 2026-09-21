@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { BookmarkListItem } from '~/lib/bookmarks.types'
 import {
   useArchiveBookmark,
+  useArchivePage,
+  useBookmarkReader,
   useDeleteBookmark,
   useRestoreBookmark,
   useTrashBookmark,
@@ -51,6 +53,8 @@ export function BookmarkList({
   const [overId, setOverId] = useState<string | null>(null)
   const draggable = manual && Boolean(onReorder)
   const trashBookmark = useTrashBookmark()
+  const archivePage = useArchivePage()
+  const [preview, setPreview] = useState<BookmarkListItem | null>(null)
   const restoreBookmark = useRestoreBookmark()
   const archiveBookmark = useArchiveBookmark()
   const deleteBookmark = useDeleteBookmark()
@@ -65,6 +69,15 @@ export function BookmarkList({
       selectAllRef.current.indeterminate = someSelected && !allSelected
     }
   }, [someSelected, allSelected])
+
+  useEffect(() => {
+    if (!preview) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') setPreview(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [preview])
 
   if (bookmarks.length === 0) {
     return (
@@ -179,7 +192,7 @@ export function BookmarkList({
                     {hostFor(bookmark.url)}
                   </span>
                   {bookmark.collectionName && (
-                    <span className="shrink-0 font-mono text-[11px] text-ink-muted">
+                    <span className="shrink-0 font-mono text-[11px] text-accent">
                       /{bookmark.collectionName}
                     </span>
                   )}
@@ -215,6 +228,13 @@ export function BookmarkList({
                 )}
               </div>
               <div className="flex shrink-0 items-start gap-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => setPreview(bookmark)}
+                >
+                  preview
+                </button>
                 {bookmark.status === 'active' && (
                   <>
                     <a
@@ -282,6 +302,96 @@ export function BookmarkList({
           )
         })}
       </ul>
+
+      {preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/80 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`preview of ${preview.title || preview.url}`}
+            className="flex h-[70vh] max-h-[640px] min-h-0 w-full max-w-3xl flex-col rounded-lg border border-line bg-surface"
+          >
+            <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line p-3">
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm">{preview.title || preview.url}</span>
+                <span className="truncate font-mono text-[11px] text-ink-faint">
+                  {preview.url}
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <a href={preview.url} target="_blank" rel="noreferrer" className="btn">
+                  open original
+                </a>
+                <button type="button" className="btn" onClick={() => setPreview(null)}>
+                  close
+                </button>
+              </div>
+            </header>
+
+            <ReaderBody id={preview.id} archivePage={archivePage} />
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+/** Reader view: readable text from the snapshot or a live fetch, never a blocked frame. */
+function ReaderBody({
+  id,
+  archivePage,
+}: {
+  id: string
+  archivePage: ReturnType<typeof useArchivePage>
+}) {
+  const reader = useBookmarkReader(id, true)
+
+  if (reader.isPending) {
+    return (
+      <p className="flex-1 p-6 text-center font-mono text-xs text-ink-faint">
+        reading the page…
+      </p>
+    )
+  }
+
+  if (reader.isError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="font-mono text-xs text-danger">
+          {reader.error instanceof Error
+            ? reader.error.message
+            : 'could not read the page'}
+        </p>
+        <button
+          type="button"
+          className="btn"
+          disabled={archivePage.isPending}
+          onClick={() => archivePage.mutate(id)}
+        >
+          {archivePage.isPending ? 'snapshotting…' : 'try a snapshot'}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <iframe
+        title={`preview of ${reader.data.title ?? reader.data.url}`}
+        srcDoc={reader.data.html}
+        sandbox=""
+        referrerPolicy="no-referrer"
+        className="min-h-0 w-full flex-1"
+      />
+      <footer className="border-t border-line p-2">
+        <span className="font-mono text-[11px] text-ink-faint">
+          {reader.data.source === 'snapshot'
+            ? 'rendered from your snapshot · scripts off'
+            : reader.data.source === 'youtube'
+              ? 'youtube transcript · scripts off'
+              : 'fetched just now · scripts off'}
+        </span>
+      </footer>
+    </>
   )
 }

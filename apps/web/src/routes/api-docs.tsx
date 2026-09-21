@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Suspense, lazy, useEffect, useState } from 'react'
+import { SignOut } from '~/components/SignOut'
 import { buildOpenApiDocument } from '~/lib/openapi'
 import { fetchSession } from '~/lib/session'
 
@@ -41,7 +42,10 @@ function ApiDocs() {
         >
           ← pinshelf
         </Link>
-        <span className="font-mono text-xs text-ink-faint">api reference</span>
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-xs text-ink-faint">api reference</span>
+          <SignOut />
+        </div>
       </header>
 
       {mounted ? (

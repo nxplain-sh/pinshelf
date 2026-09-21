@@ -297,7 +297,7 @@ describe('import', () => {
     expect(saved[0].description).toContain('89 verified book recommendations')
     expect(saved[0].collectionName).toBeNull()
     expect(saved[0].tags.slice().sort()).toEqual(
-      ['Read Later', 'books', 'fun', 'interesting'].sort(),
+      ['read later', 'books', 'fun', 'interesting'].sort(),
     )
     expect(saved[0].createdAt).toEqual(new Date(1596669210 * 1000))
 
@@ -353,5 +353,35 @@ describe('export', () => {
     expect(reparsed).toHaveLength(1)
     expect(reparsed[0].collection).toBe('Reading')
     expect(reparsed[0].tags).toEqual(['longform', 'rust'])
+  })
+})
+
+describe('exact url filter', () => {
+  it('matches a saved url regardless of casing, www, or tracking params', async () => {
+    await createBookmarkRecord({ url: 'https://example.com/Exact-Page?utm_source=x' })
+
+    const exact = await queryBookmarks({
+      status: 'active',
+      url: 'https://www.example.com/Exact-Page',
+    })
+    expect(exact).toHaveLength(1)
+    expect(exact[0].url).toContain('Exact-Page')
+
+    const missing = await queryBookmarks({
+      status: 'active',
+      url: 'https://example.com/never-saved',
+    })
+    expect(missing).toHaveLength(0)
+  })
+})
+
+describe('host filter', () => {
+  it('matches an exact host and ignores www', async () => {
+    await createBookmarkRecord({ url: 'https://docs.example.org/one' })
+    await createBookmarkRecord({ url: 'https://other.example.org/two' })
+
+    const rows = await queryBookmarks({ status: 'active', host: 'www.docs.example.org' })
+    expect(rows).toHaveLength(1)
+    expect(rows[0].url).toContain('/one')
   })
 })

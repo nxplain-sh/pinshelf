@@ -42,3 +42,4 @@ This log follows the conventions from [architecture-decision-record](https://git
 | [0016](./0016-self-host-with-docker-on-workerd.md)               | Self-host with Docker by running the built Worker on workerd  | accepted |
 | [0017](./0017-archive-pages-into-r2-as-untrusted-html.md)        | Archive pages into R2 as untrusted HTML snapshots             | accepted |
 | [0018](./0018-share-single-bookmarks-with-revocable-links.md)    | Share single bookmarks with revocable public links            | accepted |
+| [0019](./0019-expose-the-library-over-mcp.md)                    | Serve the library over MCP as well as REST                    | accepted |

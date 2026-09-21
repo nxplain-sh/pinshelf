@@ -7,6 +7,7 @@ export const settings = sqliteTable('settings', {
   aiApiKey: text('ai_api_key'),
   aiModel: text('ai_model'),
   backupRetention: integer('backup_retention').notNull().default(30),
+  autoArchive: integer('auto_archive', { mode: 'boolean' }).notNull().default(false),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 

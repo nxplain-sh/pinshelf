@@ -2,6 +2,11 @@
 
 Repo-specific notes for coding agents. `README.md` covers the product, stack, and setup; `CONTRIBUTING.md` is the contribution contract (commits, tests, ADRs, database workflow). Read both first. This file records only what they do not make obvious.
 
+## Branching
+
+- `development` is the integration branch, `main` the release branch; both are protected and only change through pull requests. Never commit or push to either directly, and never force-push them.
+- Work on a `feat/`, `fix/`, `docs/`, or `chore/` branch based on `development`. A release is a pull request from `development` to `main`, then a `vX.Y.Z` tag on `main`. The full process is in `CONTRIBUTING.md`; move the `[Unreleased]` CHANGELOG entries into the released version as part of the release pull request.
+
 ## Commands
 
 - `make setup` once per clone: installs, creates `apps/web/.dev.vars`, applies local D1 migrations.
@@ -26,6 +31,10 @@ Repo-specific notes for coding agents. `README.md` covers the product, stack, an
 - `.server.ts` marks Worker-only modules; client-safe logic stays in plain `.ts`. Server code reads config through `import { env } from 'cloudflare:workers'` — never `process.env`, and Vite does not feed Worker bindings.
 - `~/*` maps to `apps/web/src` (tsconfig paths, Vite, and Vitest all alias it).
 - REST API: thin route files under `apps/web/src/routes/api/`, handlers in `lib/api-handlers.server.ts`, request schemas in `lib/api-schemas.ts`. `lib/openapi.ts` reuses those Zod schemas, so the docs stay in sync only if both sides change together. Bearer tokens carry `read`/`write` scopes enforced by `authorizeApiRequest` in `lib/api.server.ts` — pass `'write'` on any mutating handler.
+- `POST /mcp` (`lib/mcp.server.ts`, route `routes/mcp.ts`) is a stateless MCP endpoint using those same tokens and scopes; its tools call the same `.server` functions as the REST handlers, so keep the two surfaces in step.
+- Views: home is active bookmarks; `/archive` (`archive.index.tsx`) holds the archived and trash lists and `/trash` redirects there; `/tags` owns rename and merge. Sign-out is a server function (`lib/session.ts`) that revokes the session row, called from `components/SignOut.tsx` on every page.
+- Preview (`components/BookmarkList.tsx` + `lib/reader.server.ts`) re-serves the snapshot or a live fetch with scripts stripped and a `<base>` injected into a `sandbox=""` iframe; `settings.auto_archive` (migration `0010_chubby_mysterio.sql`) snapshots every new save inline in `createBookmarkRecord`.
+- AI features: the `toolbox` drawer (`components/Toolbox.tsx`) covers cleanup scans, tag-merge proposals, and the no-AI duplicate finder; `/bookmarks/$id` has per-bookmark ask buttons. Page text for ask comes from `lib/page-text.server.ts` (snapshot, YouTube transcript, then metadata).
 - Auth is Better Auth in `apps/web/src/lib/auth.server.ts`: sign-in rate limits live in D1, two-factor is optional, and the drizzle adapter schema must list every plugin model (`twoFactor`, `rateLimit`) or queries fail at runtime.
 - `packages/shared` is consumed as raw TypeScript (`exports` points at `src/index.ts`); there is no build step for it.
 - `apps/extension` is a WXT extension (`entrypoints/`, `utils/`); its `typecheck` script runs `wxt prepare` first.

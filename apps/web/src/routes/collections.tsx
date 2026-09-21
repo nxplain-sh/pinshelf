@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { SignOut } from '~/components/SignOut'
 import {
   queryKeys,
   useCreateCollection,
@@ -67,7 +68,10 @@ function CollectionsPage() {
         >
           ← pinshelf
         </Link>
-        <span className="font-mono text-xs text-ink-faint">collections</span>
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-xs text-ink-faint">collections</span>
+          <SignOut />
+        </div>
       </header>
 
       <form onSubmit={create} className="flex gap-2">
@@ -170,19 +174,28 @@ function SmartCollections() {
             className="panel flex items-center justify-between gap-3 p-3"
           >
             <div className="flex min-w-0 flex-col">
-              <Link
-                to="/"
-                search={{
-                  q: saved.query.q,
-                  tag: saved.query.tag,
-                  collection: saved.query.collection,
-                  sort: saved.query.sort,
-                  status: saved.query.status === 'archived' ? 'archived' : undefined,
-                }}
-                className="truncate text-sm text-ink underline-offset-4 hover:underline"
-              >
-                {saved.name}
-              </Link>
+              {saved.query.status === 'active' ? (
+                <Link
+                  to="/"
+                  search={{
+                    q: saved.query.q,
+                    tag: saved.query.tag,
+                    collection: saved.query.collection,
+                    sort: saved.query.sort,
+                  }}
+                  className="truncate text-sm text-ink underline-offset-4 hover:underline"
+                >
+                  {saved.name}
+                </Link>
+              ) : (
+                <Link
+                  to="/archive"
+                  search={{ status: saved.query.status }}
+                  className="truncate text-sm text-ink underline-offset-4 hover:underline"
+                >
+                  {saved.name}
+                </Link>
+              )}
               <span className="font-mono text-[11px] text-ink-faint">
                 {describe(saved.query) || 'everything'}
               </span>

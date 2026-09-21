@@ -1,4 +1,5 @@
 import {
+  normalizeTagName,
   normalizeUrl,
   parseImportFile,
   tagNameKey,
@@ -193,8 +194,8 @@ async function ensureTags(
 ): Promise<Map<string, string>> {
   const byKey = new Map<string, string>()
   for (const raw of names) {
-    const name = raw.trim().replace(/^#+/, '').replace(/\s+/g, ' ')
-    if (!name || name.length > 64) continue
+    const name = normalizeTagName(raw)
+    if (!name) continue
     const key = tagNameKey(name)
     if (!byKey.has(key)) byKey.set(key, name)
   }

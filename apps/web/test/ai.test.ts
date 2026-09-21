@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeAll } from 'vitest'
 import {
   applyProposals,
+  askBookmark,
   callAi,
   getAiConfig,
   getAiSettingsView,
@@ -9,6 +10,8 @@ import {
   saveAiSettings,
   scanForCleanup,
 } from '../src/lib/ai.server'
+import { archiveBookmarkPage } from '../src/lib/archive.server'
+import { queryTags } from '../src/lib/taxonomy.server'
 import type { CleanupCandidate } from '../src/lib/ai-schemas'
 import { createBookmarkRecord, getBookmarkById } from '../src/lib/bookmarks.server'
 import { parseStrictJson } from '../src/lib/ai.server'
@@ -17,6 +20,7 @@ import {
   interpretSearch,
   sanitizeSmartFilter,
   suggestSmartCollections,
+  suggestTagMerges,
 } from '../src/lib/smart.server'
 
 const candidate = (
@@ -148,7 +152,7 @@ describe('scan and apply', () => {
     const updated = await getBookmarkById(ids[2] as string)
     expect(updated?.tags).toEqual(['ai-tag'])
     expect(updated?.description).toBe('AI description')
-    expect(updated?.collectionName).toBe('AI Collection')
+    expect(updated?.collectionName).toBe('ai collection')
 
     const keeper = await getBookmarkById(ids[0] as string)
     expect(keeper?.status).toBe('active')
@@ -214,5 +218,50 @@ describe('smart filters and collections', () => {
 
   it('refuses oversized model output before parsing', () => {
     expect(() => parseStrictJson('x'.repeat(200_001))).toThrow('not valid JSON')
+  })
+})
+
+describe('bookmark ask and tag merges', () => {
+  it('answers from the archived snapshot when there is one', async () => {
+    await saveAiSettings({ baseUrl: 'https://ai.test/v1', model: 'test-model' })
+    const created = await createBookmarkRecord({ url: 'https://example.com/ask-archive' })
+    const id = created.bookmark?.id as string
+
+    const archived = await archiveBookmarkPage(id)
+    expect(archived.status).toBe('done')
+
+    const answer = await askBookmark(id, 'summary')
+    expect(answer.source).toBe('archive')
+    expect(answer.text).toBe('Stub answer about the page.')
+  })
+
+  it('prefers the transcript for a youtube bookmark', async () => {
+    const created = await createBookmarkRecord({
+      url: 'https://www.youtube.com/watch?v=abc123',
+    })
+    const answer = await askBookmark(created.bookmark?.id as string, 'takeaways')
+    expect(answer.source).toBe('youtube')
+  })
+
+  it('falls back to metadata when nothing is archived', async () => {
+    const created = await createBookmarkRecord({ url: 'https://example.com/ask-meta' })
+    const answer = await askBookmark(created.bookmark?.id as string, 'verdict')
+    expect(answer.source).toBe('metadata')
+  })
+
+  it('proposes merges between existing tags only', async () => {
+    await createBookmarkRecord({ url: 'https://example.com/tag-a', tags: ['recipe'] })
+    await createBookmarkRecord({ url: 'https://example.com/tag-b', tags: ['recipes'] })
+
+    const merges = await suggestTagMerges()
+    const names = (await queryTags()).map((tag) => tag.name)
+    expect(names).toContain('recipe')
+    expect(names).toContain('recipes')
+
+    expect(merges.length).toBeGreaterThan(0)
+    // The stub pairs the first two tags it is given; both must be real ones.
+    expect(merges[0].from).toBe(names[0])
+    expect(merges[0].into).toBe(names[1])
+    expect(merges[0].fromId).not.toBe(merges[0].intoId)
   })
 })

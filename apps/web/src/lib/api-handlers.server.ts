@@ -7,7 +7,9 @@ import {
   readJsonObject,
 } from '~/lib/api.server'
 import {
+  askBookmarkSchema,
   createBookmarkSchema,
+  createHighlightSchema,
   listBookmarksQuerySchema,
   updateBookmarkSchema,
 } from '~/lib/api-schemas'
@@ -19,6 +21,8 @@ import {
   setBookmarkStatus,
   updateBookmarkRecord,
 } from '~/lib/bookmarks.server'
+import { askBookmark } from '~/lib/ai.server'
+import { createHighlight } from '~/lib/highlights.server'
 import { queryCollections, queryTags } from '~/lib/taxonomy.server'
 import { db } from '~/db/index.server'
 
@@ -125,4 +129,49 @@ export async function handleListTags(request: Request): Promise<Response> {
   if (denied) return denied
 
   return Response.json({ tags: await queryTags() })
+}
+
+export async function handleCreateHighlight(request: Request): Promise<Response> {
+  const denied = await authorizeApiRequest(request, 'write')
+  if (denied) return denied
+
+  const body = await readJsonObject(request)
+  if (body instanceof Response) return body
+
+  const parsed = createHighlightSchema.safeParse(body)
+  if (!parsed.success) return badRequestFromZod(parsed.error)
+
+  const bookmark = await getBookmarkById(parsed.data.bookmarkId)
+  if (!bookmark) return notFound('bookmark not found')
+
+  try {
+    const highlight = await createHighlight(
+      parsed.data.bookmarkId,
+      parsed.data.quote,
+      parsed.data.note ?? null,
+    )
+    return Response.json({ highlight }, { status: 201 })
+  } catch (cause) {
+    return badRequest(cause instanceof Error ? cause.message : 'could not save highlight')
+  }
+}
+
+export async function handleAskBookmark(request: Request, id: string): Promise<Response> {
+  const denied = await authorizeApiRequest(request)
+  if (denied) return denied
+
+  const body = await readJsonObject(request)
+  if (body instanceof Response) return body
+
+  const parsed = askBookmarkSchema.safeParse(body)
+  if (!parsed.success) return badRequestFromZod(parsed.error)
+
+  const bookmark = await getBookmarkById(id)
+  if (!bookmark) return notFound('bookmark not found')
+
+  try {
+    return Response.json(await askBookmark(id, parsed.data.mode))
+  } catch (cause) {
+    return badRequest(cause instanceof Error ? cause.message : 'could not ask')
+  }
 }
