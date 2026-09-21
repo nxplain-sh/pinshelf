@@ -27,8 +27,8 @@ Vitest is pinned to v4 across the workspace because `@cloudflare/vitest-plugin` 
 
 Releasing:
 
-1. Open a pull request from `development` to `main` titled after the release, for example `release: 0.2.0`. The full CI matrix runs on it, and `main` only ever receives release merges.
-2. In the same pull request, move the `[Unreleased]` entries in [CHANGELOG.md](CHANGELOG.md) under `## [X.Y.Z] - YYYY-MM-DD` and leave a fresh empty `[Unreleased]` section. Versions follow [SemVer](https://semver.org): breaking changes bump the major, features the minor, fixes the patch.
+1. Branch `release/X.Y.Z` off `development` (or off `main` for a hotfix) and move the `[Unreleased]` entries in [CHANGELOG.md](CHANGELOG.md) under `## [X.Y.Z] - YYYY-MM-DD`, leaving a fresh empty `[Unreleased]` section. Versions follow [SemVer](https://semver.org): breaking changes bump the major, features the minor, fixes the patch.
+2. Open a pull request from `release/X.Y.Z` to `main` titled `release: X.Y.Z`. The full CI matrix and the Docker build run on it.
 3. Merge the pull request once green, then tag the merge commit on `main` and push the tag:
 
    ```bash
@@ -38,7 +38,7 @@ Releasing:
    ```
 
 4. The tag does three things: `.github/workflows/release.yml` publishes a GitHub release with generated notes, `.github/workflows/docker.yml` builds and signs `ghcr.io/nxplain-sh/pinshelf:v0.2.0`, and `latest` keeps tracking `main`.
-5. Fast-forward `development` to `main` (`git checkout development && git merge --ff-only main && git push`) so the next cycle starts from the release commit.
+5. Open a pull request from `main` back into `development` (both are protected, so the release commit cannot be pushed directly) so the next cycle starts from the release commit.
 
 Hotfixes take the same path with a `fix/` branch off `main`, merged back into both `main` (patch tag) and `development`.
 
