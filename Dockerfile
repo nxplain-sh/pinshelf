@@ -34,8 +34,16 @@ LABEL org.opencontainers.image.title="pinshelf" \
 # Keep in sync with the wrangler devDependency in apps/web/package.json.
 ARG WRANGLER_VERSION=4.135.0
 ENV WRANGLER_SEND_METRICS=false NODE_ENV=production
+# npm is only needed to install wrangler. Its bundled npm, npx, corepack, and
+# yarn trees are the bulk of the image's vulnerability findings and nothing at
+# runtime uses them, so they go once wrangler is in place.
 RUN npm install --global --no-fund --no-audit "wrangler@${WRANGLER_VERSION}" \
-  && npm cache clean --force
+  && npm cache clean --force \
+  && rm -rf /usr/local/lib/node_modules/npm \
+    /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+    /opt/yarn-* \
+  && wrangler --version
 
 WORKDIR /app
 COPY --from=build --chown=node:node /app/apps/web/dist ./dist
