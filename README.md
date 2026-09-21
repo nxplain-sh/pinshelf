@@ -7,7 +7,7 @@
 
 [![CI](https://github.com/nxplain-sh/pinshelf/actions/workflows/ci.yml/badge.svg)](https://github.com/nxplain-sh/pinshelf/actions/workflows/ci.yml)
 
-Self-hosted bookmark manager in the spirit of Raindrop, Karakeep, and Linkwarden. Save a page, keep it organized, find it again later. Single-user, no account to create anywhere but your own instance.
+Self-hosted bookmark manager in the spirit of Raindrop, Karakeep, and Linkwarden. pin it, shelf it, find it. Single-user, no account to create anywhere but your own instance.
 
 ## Stack
 
@@ -53,26 +53,39 @@ There is no `.env.local`. Vite does not feed Worker bindings; the Worker reads `
 
 ### Browser extension
 
-`apps/extension` is a WXT extension for Chrome and Firefox. It saves the current page or a right-clicked link using an API token created on the `/settings` page. See [apps/extension/README.md](apps/extension/README.md) for load-unpacked instructions and permissions. Note that root `pnpm dev` also launches Chrome with the extension loaded; use `pnpm --filter @pinshelf/web dev` if you only want the web app.
+`apps/extension` is a WXT extension for Chrome and Firefox. It saves the current page, every open tab, or a right-clicked link using an API token created on the `/settings` page; it badges tabs that are already saved, searches the library from the omnibox (`pin`), saves highlighted selections, summarises the current page through your AI provider, and opens the app in Chrome's side panel. See [apps/extension/README.md](apps/extension/README.md) for load-unpacked instructions and permissions. Note that root `pnpm dev` also launches Chrome with the extension loaded; use `pnpm --filter @pinshelf/web dev` if you only want the web app.
 
 ### REST API
 
 Every client-facing route requires `Authorization: Bearer <token>`. The interactive reference is at `/api-docs` (Scalar), and the OpenAPI document is served at `/api/openapi.json` — request schemas are derived from the same Zod schemas the handlers validate with, so the docs cannot drift.
 
-| Route                                   | Purpose                                                  |
-| --------------------------------------- | -------------------------------------------------------- |
-| `GET /api/bookmarks`                    | List, with `status`, `q`, `tag`, `collection` filters    |
-| `POST /api/bookmarks`                   | Save a URL with optional `tags`, `notes`, `collectionId` |
-| `GET /api/bookmarks/$id`                | Fetch one bookmark                                       |
-| `PATCH /api/bookmarks/$id`              | Update fields, tags, collection, or `status`             |
-| `DELETE /api/bookmarks/$id`             | Delete permanently                                       |
-| `GET /api/collections`, `GET /api/tags` | Picker data                                              |
+| Route                                   | Purpose                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| `GET /api/bookmarks`                    | List, with `status`, `q`, `tag`, `collection`, `url`, `host` filters          |
+| `POST /api/bookmarks`                   | Save a URL with optional `tags`, `notes`, `collectionId`                      |
+| `GET /api/bookmarks/$id`                | Fetch one bookmark                                                            |
+| `PATCH /api/bookmarks/$id`              | Update fields, tags, collection, or `status`                                  |
+| `DELETE /api/bookmarks/$id`             | Delete permanently                                                            |
+| `POST /api/bookmarks/$id/ask`           | Ask the model about one bookmark (`summary`, `takeaways`, `plain`, `verdict`) |
+| `POST /api/highlights`                  | Add a highlight (quote plus optional note) to a bookmark                      |
+| `GET /api/collections`, `GET /api/tags` | Picker data                                                                   |
 
 `GET /api/health` is the one unauthenticated route: it answers `{"ok":true}` after touching the database, and it is what the container healthcheck polls.
 
-### AI cleanup (bring your own provider)
+### MCP
 
-`/cleanup` sends a batch of active bookmarks to an OpenAI-compatible endpoint and proposes duplicate groups to trash plus tags, descriptions, and collections to fill in. Configure the base URL, model, and API key under Settings → AI; any provider that speaks `/chat/completions` works, including a local Ollama or vLLM. The key is stored in your database and never returned to the browser after saving. Nothing is applied automatically: proposals are listed with checkboxes, and duplicates go to trash, not deletion. See [ADR-0013](docs/adr/0013-bring-your-own-ai-provider.md).
+`POST /mcp` speaks JSON-RPC MCP (streamable HTTP, stateless) with the same `Authorization: Bearer <token>` tokens and `read`/`write` scopes as the REST API, so ChatGPT, Claude, or any MCP client can use the library directly. Tools: `search_bookmarks`, `get_bookmark`, `list_collections`, `list_tags`, `ask_bookmark` (read) and `save_bookmark`, `update_bookmark`, `add_highlight`, `set_status` (write). `GET /mcp` answers `405`; there is no SSE stream. See [ADR-0019](docs/adr/0019-expose-the-library-over-mcp.md).
+
+### AI (bring your own provider)
+
+The `toolbox` button (bottom right) sends a batch of active bookmarks to an OpenAI-compatible endpoint and proposes duplicate groups to trash plus tags, descriptions, and collections to fill in. Configure the base URL, model, and API key under Settings → AI; any provider that speaks `/chat/completions` works, including a local Ollama or vLLM. The key is stored in your database and never returned to the browser after saving. Nothing is applied automatically: proposals are listed with checkboxes, and duplicates go to trash, not deletion. See [ADR-0013](docs/adr/0013-bring-your-own-ai-provider.md).
+
+**Asking about one bookmark.** On a bookmark page, `summarise`, `key takeaways`, `explain simply`, and `worth reading?` answer from the archived snapshot when one exists, from the YouTube transcript for video bookmarks, and from the stored metadata otherwise. The panel says which source it read.
+
+**Preview.** Every row has a `preview` button next to `open`: a small window that renders the page itself — from your snapshot when one exists, otherwise from a live fetch through the same SSRF-guarded path. The HTML is re-served by us with scripts and inline handlers stripped, a `<base>` pointing back at the original site, and a `sandbox=""` iframe, so sites that block framing (`X-Frame-Options`, `frame-ancestors`) render anyway without running their code.
+**Auto-archive.** Settings → Backups has `snapshot every new save`: when on, each new bookmark gets its R2 HTML snapshot inline with the save (one fetch and put, same guarded path as the manual action).
+
+**Tag merges.** The toolbox can propose merges for tags that mean the same thing (`recipe` / `recipes`); each pair is reviewed with a checkbox and applied through the same merge path as `/tags`.
 
 Large libraries are scanned in batches of 50 in a single scan (up to 500 bookmarks), proposals are merged across batches, and the result line reports how many batches ran and how many tokens the provider counted. Token-level streaming is not used: proposals are structured JSON, not prose, so the value is in the merged result, not in watching it arrive.
 
@@ -94,11 +107,11 @@ The sort control offers `newest first`, `oldest first`, `title a–z`, `title z�
 
 ### Archive
 
-Rows move between `active`, `archived`, and `trashed`. Archiving keeps a page out of the default list without sending it to the trash; the `archived` link in the header shows that view, and the API accepts `status=archived` anywhere it accepts `active` or `trashed`.
+Rows move between `active`, `archived`, and `trashed`. Archiving keeps a page out of the default list without sending it to the trash; the `archive` link in the header shows both views, and the API accepts `status=archived` anywhere it accepts `active` or `trashed`.
 
 ### Library upkeep
 
-The daily cron does two bounded passes besides the backup: it retries metadata for saves that failed (up to three attempts), and it re-checks links that have not been checked in 30 days with a guarded `HEAD` request. A page that no longer answers shows `link looks broken` in the list. The `/cleanup` page also groups duplicates without AI: rows whose urls differ only by query string, fragment, or trailing slash are listed together so you can trash the extras. Tags can be renamed, or merged into another tag, from Settings → Tags. `/insights` charts the library: counts by status, broken links, metadata failures, snapshots, saves per month, top hosts, and top tags.
+The daily cron does two bounded passes besides the backup: it retries metadata for saves that failed (up to three attempts), and it re-checks links that have not been checked in 30 days with a guarded `HEAD` request. A page that no longer answers shows `link looks broken` in the list. The toolbox also groups duplicates without AI: rows whose urls differ only by query string, fragment, or trailing slash are listed together so you can trash the extras. Tags and collections are stored lowercase — `normalizeTagName` lowercases every name on the way in, so `iOS` and `ios` are the same row. Tags can be renamed, or merged into another tag, from `/tags`, or suggested in bulk by the toolbox. `/insights` charts the library: counts by status, broken links, metadata failures, snapshots, saves per month, top hosts, and top tags.
 
 ### Page snapshots
 
@@ -206,7 +219,7 @@ Sign-in and second-factor verification are rate limited (5 attempts a minute, tr
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Architectural changes need an ADR in `docs/adr/` alongside the code.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch and release process: `development` integrates, `main` releases, both take changes only through pull requests, and a release is a pull request plus a `vX.Y.Z` tag. Architectural changes need an ADR in `docs/adr/` alongside the code.
 
 ## License
 

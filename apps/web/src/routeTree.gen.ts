@@ -11,24 +11,28 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
-import { Route as CleanupRouteImport } from './routes/cleanup'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ShareRouteImport } from './routes/share'
+import { Route as TagsRouteImport } from './routes/tags'
 import { Route as TrashRouteImport } from './routes/trash'
 import { Route as TwoFactorRouteImport } from './routes/two-factor'
 import { Route as ApiBookmarksRouteImport } from './routes/api/bookmarks'
 import { Route as ApiCollectionsRouteImport } from './routes/api/collections'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiHighlightsRouteImport } from './routes/api/highlights'
 import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api/openapi[.]json'
 import { Route as ApiTagsRouteImport } from './routes/api/tags'
+import { Route as ArchiveIndexRouteImport } from './routes/archive.index'
 import { Route as ArchiveIdRouteImport } from './routes/archive.$id'
 import { Route as BookmarksIdRouteImport } from './routes/bookmarks.$id'
 import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiBookmarksIdRouteImport } from './routes/api/bookmarks.$id'
+import { Route as ApiBookmarksIdAskRouteImport } from './routes/api/bookmarks.$id.ask'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,11 +42,6 @@ const IndexRoute = IndexRouteImport.update({
 const ApiDocsRoute = ApiDocsRouteImport.update({
   id: '/api-docs',
   path: '/api-docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CleanupRoute = CleanupRouteImport.update({
-  id: '/cleanup',
-  path: '/cleanup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionsRoute = CollectionsRouteImport.update({
@@ -60,6 +59,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -68,6 +72,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ShareRoute = ShareRouteImport.update({
   id: '/share',
   path: '/share',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TagsRoute = TagsRouteImport.update({
+  id: '/tags',
+  path: '/tags',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrashRoute = TrashRouteImport.update({
@@ -95,6 +104,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHighlightsRoute = ApiHighlightsRouteImport.update({
+  id: '/api/highlights',
+  path: '/api/highlights',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOpenapiDotjsonRoute = ApiOpenapiDotjsonRouteImport.update({
   id: '/api/openapi.json',
   path: '/api/openapi.json',
@@ -105,10 +119,15 @@ const ApiTagsRoute = ApiTagsRouteImport.update({
   path: '/api/tags',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ArchiveIdRoute = ArchiveIdRouteImport.update({
-  id: '/archive/$id',
-  path: '/archive/$id',
+const ArchiveIndexRoute = ArchiveIndexRouteImport.update({
+  id: '/archive/',
+  path: '/archive/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ArchiveIdRoute = ArchiveIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ArchiveRoute,
 } as any)
 const BookmarksIdRoute = BookmarksIdRouteImport.update({
   id: '/bookmarks/$id',
@@ -130,162 +149,193 @@ const ApiBookmarksIdRoute = ApiBookmarksIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiBookmarksRoute,
 } as any)
+const ApiBookmarksIdAskRoute = ApiBookmarksIdAskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
+  getParentRoute: () => ApiBookmarksIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api-docs': typeof ApiDocsRoute
-  '/cleanup': typeof CleanupRoute
   '/collections': typeof CollectionsRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
   '/share': typeof ShareRoute
+  '/tags': typeof TagsRoute
   '/trash': typeof TrashRoute
   '/two-factor': typeof TwoFactorRoute
   '/api/bookmarks': typeof ApiBookmarksRouteWithChildren
   '/api/collections': typeof ApiCollectionsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/highlights': typeof ApiHighlightsRoute
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/tags': typeof ApiTagsRoute
   '/archive/$id': typeof ArchiveIdRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/s/$token': typeof STokenRoute
+  '/archive/': typeof ArchiveIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/bookmarks/$id': typeof ApiBookmarksIdRoute
+  '/api/bookmarks/$id': typeof ApiBookmarksIdRouteWithChildren
+  '/api/bookmarks/$id/ask': typeof ApiBookmarksIdAskRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api-docs': typeof ApiDocsRoute
-  '/cleanup': typeof CleanupRoute
   '/collections': typeof CollectionsRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
   '/share': typeof ShareRoute
+  '/tags': typeof TagsRoute
   '/trash': typeof TrashRoute
   '/two-factor': typeof TwoFactorRoute
   '/api/bookmarks': typeof ApiBookmarksRouteWithChildren
   '/api/collections': typeof ApiCollectionsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/highlights': typeof ApiHighlightsRoute
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/tags': typeof ApiTagsRoute
   '/archive/$id': typeof ArchiveIdRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/s/$token': typeof STokenRoute
+  '/archive': typeof ArchiveIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/bookmarks/$id': typeof ApiBookmarksIdRoute
+  '/api/bookmarks/$id': typeof ApiBookmarksIdRouteWithChildren
+  '/api/bookmarks/$id/ask': typeof ApiBookmarksIdAskRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api-docs': typeof ApiDocsRoute
-  '/cleanup': typeof CleanupRoute
   '/collections': typeof CollectionsRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/settings': typeof SettingsRoute
   '/share': typeof ShareRoute
+  '/tags': typeof TagsRoute
   '/trash': typeof TrashRoute
   '/two-factor': typeof TwoFactorRoute
   '/api/bookmarks': typeof ApiBookmarksRouteWithChildren
   '/api/collections': typeof ApiCollectionsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/highlights': typeof ApiHighlightsRoute
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/tags': typeof ApiTagsRoute
   '/archive/$id': typeof ArchiveIdRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/s/$token': typeof STokenRoute
+  '/archive/': typeof ArchiveIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/bookmarks/$id': typeof ApiBookmarksIdRoute
+  '/api/bookmarks/$id': typeof ApiBookmarksIdRouteWithChildren
+  '/api/bookmarks/$id/ask': typeof ApiBookmarksIdAskRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/api-docs'
-    | '/cleanup'
     | '/collections'
     | '/insights'
     | '/login'
+    | '/mcp'
     | '/settings'
     | '/share'
+    | '/tags'
     | '/trash'
     | '/two-factor'
     | '/api/bookmarks'
     | '/api/collections'
     | '/api/health'
+    | '/api/highlights'
     | '/api/openapi.json'
     | '/api/tags'
     | '/archive/$id'
     | '/bookmarks/$id'
     | '/s/$token'
+    | '/archive/'
     | '/api/auth/$'
     | '/api/bookmarks/$id'
+    | '/api/bookmarks/$id/ask'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/api-docs'
-    | '/cleanup'
     | '/collections'
     | '/insights'
     | '/login'
+    | '/mcp'
     | '/settings'
     | '/share'
+    | '/tags'
     | '/trash'
     | '/two-factor'
     | '/api/bookmarks'
     | '/api/collections'
     | '/api/health'
+    | '/api/highlights'
     | '/api/openapi.json'
     | '/api/tags'
     | '/archive/$id'
     | '/bookmarks/$id'
     | '/s/$token'
+    | '/archive'
     | '/api/auth/$'
     | '/api/bookmarks/$id'
+    | '/api/bookmarks/$id/ask'
   id:
     | '__root__'
     | '/'
     | '/api-docs'
-    | '/cleanup'
     | '/collections'
     | '/insights'
     | '/login'
+    | '/mcp'
     | '/settings'
     | '/share'
+    | '/tags'
     | '/trash'
     | '/two-factor'
     | '/api/bookmarks'
     | '/api/collections'
     | '/api/health'
+    | '/api/highlights'
     | '/api/openapi.json'
     | '/api/tags'
     | '/archive/$id'
     | '/bookmarks/$id'
     | '/s/$token'
+    | '/archive/'
     | '/api/auth/$'
     | '/api/bookmarks/$id'
+    | '/api/bookmarks/$id/ask'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiDocsRoute: typeof ApiDocsRoute
-  CleanupRoute: typeof CleanupRoute
   CollectionsRoute: typeof CollectionsRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   SettingsRoute: typeof SettingsRoute
   ShareRoute: typeof ShareRoute
+  TagsRoute: typeof TagsRoute
   TrashRoute: typeof TrashRoute
   TwoFactorRoute: typeof TwoFactorRoute
   ApiBookmarksRoute: typeof ApiBookmarksRouteWithChildren
   ApiCollectionsRoute: typeof ApiCollectionsRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiHighlightsRoute: typeof ApiHighlightsRoute
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiTagsRoute: typeof ApiTagsRoute
-  ArchiveIdRoute: typeof ArchiveIdRoute
   BookmarksIdRoute: typeof BookmarksIdRoute
   STokenRoute: typeof STokenRoute
+  ArchiveIndexRoute: typeof ArchiveIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -303,13 +353,6 @@ declare module '@tanstack/react-router' {
       path: '/api-docs'
       fullPath: '/api-docs'
       preLoaderRoute: typeof ApiDocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cleanup': {
-      id: '/cleanup'
-      path: '/cleanup'
-      fullPath: '/cleanup'
-      preLoaderRoute: typeof CleanupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collections': {
@@ -333,6 +376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -345,6 +395,13 @@ declare module '@tanstack/react-router' {
       path: '/share'
       fullPath: '/share'
       preLoaderRoute: typeof ShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tags': {
+      id: '/tags'
+      path: '/tags'
+      fullPath: '/tags'
+      preLoaderRoute: typeof TagsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trash': {
@@ -382,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/highlights': {
+      id: '/api/highlights'
+      path: '/api/highlights'
+      fullPath: '/api/highlights'
+      preLoaderRoute: typeof ApiHighlightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/openapi.json': {
       id: '/api/openapi.json'
       path: '/api/openapi.json'
@@ -396,12 +460,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTagsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/archive/': {
+      id: '/archive/'
+      path: '/archive'
+      fullPath: '/archive/'
+      preLoaderRoute: typeof ArchiveIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/archive/$id': {
       id: '/archive/$id'
-      path: '/archive/$id'
+      path: '/$id'
       fullPath: '/archive/$id'
       preLoaderRoute: typeof ArchiveIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ArchiveRoute
     }
     '/bookmarks/$id': {
       id: '/bookmarks/$id'
@@ -431,15 +502,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBookmarksIdRouteImport
       parentRoute: typeof ApiBookmarksRoute
     }
+    '/api/bookmarks/$id/ask': {
+      id: '/api/bookmarks/$id/ask'
+      path: '/ask'
+      fullPath: '/api/bookmarks/$id/ask'
+      preLoaderRoute: typeof ApiBookmarksIdAskRouteImport
+      parentRoute: typeof ApiBookmarksIdRoute
+    }
   }
 }
 
+interface ApiBookmarksIdRouteChildren {
+  ApiBookmarksIdAskRoute: typeof ApiBookmarksIdAskRoute
+}
+
+const ApiBookmarksIdRouteChildren: ApiBookmarksIdRouteChildren = {
+  ApiBookmarksIdAskRoute: ApiBookmarksIdAskRoute,
+}
+
+const ApiBookmarksIdRouteWithChildren = ApiBookmarksIdRoute._addFileChildren(
+  ApiBookmarksIdRouteChildren,
+)
+
 interface ApiBookmarksRouteChildren {
-  ApiBookmarksIdRoute: typeof ApiBookmarksIdRoute
+  ApiBookmarksIdRoute: typeof ApiBookmarksIdRouteWithChildren
 }
 
 const ApiBookmarksRouteChildren: ApiBookmarksRouteChildren = {
-  ApiBookmarksIdRoute: ApiBookmarksIdRoute,
+  ApiBookmarksIdRoute: ApiBookmarksIdRouteWithChildren,
 }
 
 const ApiBookmarksRouteWithChildren = ApiBookmarksRoute._addFileChildren(
@@ -449,22 +539,24 @@ const ApiBookmarksRouteWithChildren = ApiBookmarksRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiDocsRoute: ApiDocsRoute,
-  CleanupRoute: CleanupRoute,
   CollectionsRoute: CollectionsRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   SettingsRoute: SettingsRoute,
   ShareRoute: ShareRoute,
+  TagsRoute: TagsRoute,
   TrashRoute: TrashRoute,
   TwoFactorRoute: TwoFactorRoute,
   ApiBookmarksRoute: ApiBookmarksRouteWithChildren,
   ApiCollectionsRoute: ApiCollectionsRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiHighlightsRoute: ApiHighlightsRoute,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiTagsRoute: ApiTagsRoute,
-  ArchiveIdRoute: ArchiveIdRoute,
   BookmarksIdRoute: BookmarksIdRoute,
   STokenRoute: STokenRoute,
+  ArchiveIndexRoute: ArchiveIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

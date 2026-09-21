@@ -45,3 +45,15 @@ export type ApplySummary = {
   updated: number
   collectionsCreated: number
 }
+
+/** Per-bookmark AI actions; the prompt for each lives in ai.server.ts. */
+export type AskMode = 'summary' | 'takeaways' | 'plain' | 'verdict'
+
+/** A tag merge the model proposed; both tags are validated against the library. */
+export type TagMergeSuggestion = {
+  fromId: string
+  from: string
+  intoId: string
+  into: string
+  reason: string
+}

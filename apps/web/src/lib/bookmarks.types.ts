@@ -25,6 +25,10 @@ export type BookmarkFilters = {
   tag?: string
   collection?: string
   sort?: BookmarkSort
+  /** Exact url match, used by the extension's saved-page indicator. */
+  url?: string
+  /** Exact host match, without `www.`. */
+  host?: string
 }
 
 export type CreateBookmarkInput = {

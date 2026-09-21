@@ -9,3 +9,8 @@ export const apiBaseUrl = storage.defineItem<string>('local:apiBaseUrl', {
 export const apiToken = storage.defineItem<string | null>('local:apiToken', {
   fallback: null,
 })
+
+export const savedPageIndicator = storage.defineItem<boolean>(
+  'local:savedPageIndicator',
+  { fallback: true },
+)

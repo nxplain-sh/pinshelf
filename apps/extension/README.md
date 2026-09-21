@@ -21,18 +21,23 @@ Note: `pnpm dev` at the repository root also starts this, which launches Chrome.
 
 ## What it does
 
-- Popup: current tab URL and title, comma-separated tags, collection picker, save button. Shows `saved` or `already saved`.
-- Right-click a page or link → **Save to pinshelf**. The toolbar badge flashes `✓` on success and `!` on failure.
+- Popup: current tab URL and title, comma-separated tags, collection picker, save button, and **all tabs (N)** to save every open tab in the window at once. Shows `saved`, `already there`, or a failed count.
+- Right-click a page or link → **Save to pinshelf**. Select text → **Highlight selection in pinshelf**; the page is saved first when it is new, then the quote is attached to it. The toolbar badge flashes `✓` on success and `!` on failure.
+- Popup **summarise** asks the configured model about the current page (it must be saved first), and **sidebar** opens the app in Chrome's side panel.
+- **Saved-page badge**: tabs whose url is already in the library get a `✓` badge. Checked on navigation and tab switch only, never in the background; disable it from the popup's settings.
+- **Omnibox**: type `pin` and a space in the address bar to search the library; the default suggestion opens the instance search.
 - Token and base URL are stored in `browser.storage.local`, never synced anywhere else.
 
 ## Permissions, and why
 
-| Permission                                                                   | Reason                                                              |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `activeTab`                                                                  | Read the URL and title of the tab you are saving                    |
-| `contextMenus`                                                               | The right-click save entry                                          |
-| `storage`                                                                    | Keep your token and base URL                                        |
-| `host_permissions` (`https://app.pinshelf.app/*`, `http://localhost:3000/*`) | Call the API without CORS preflight; no other origins are reachable |
+| Permission                                                                   | Reason                                                                    |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `activeTab`                                                                  | Read the URL and title of the tab you are saving                          |
+| `contextMenus`                                                               | The right-click save entry                                                |
+| `storage`                                                                    | Keep your token and base URL, and the badge preference                    |
+| `tabs`                                                                       | List open tabs for "all tabs" and read the active tab's url for the badge |
+| `sidePanel`                                                                  | The popup's "sidebar" button (Chrome and Edge only)                       |
+| `host_permissions` (`https://app.pinshelf.app/*`, `http://localhost:3000/*`) | Call the API without CORS preflight; no other origins are reachable       |
 
 ## Publishing
 

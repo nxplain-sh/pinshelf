@@ -9,9 +9,9 @@ Living documentation for pinshelf. Code shows what the system does; these pages 
 
 ## Not here yet
 
-- Deployment runbook (arrives with the Phase 4 deploy button and custom domain)
-- API reference for the extension (arrives with Phase 3)
 - Data model reference (generated from `apps/web/src/db/schema.ts`, add when the schema stops fitting on one screen)
+
+Install and deploy steps live in [`site/public/docs.html`](../site/public/docs.html); the REST reference is served at `/api-docs` and the OpenAPI document at `/api/openapi.json`.
 
 ## Conventions
 

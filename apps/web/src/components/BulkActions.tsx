@@ -12,10 +12,12 @@ type BulkPayload = {
 
 export function BulkActions({
   ids,
+  urls,
   collections,
   onClear,
 }: {
   ids: string[]
+  urls: string[]
   collections: { id: string; name: string }[]
   onClear: () => void
 }) {
@@ -42,6 +44,17 @@ export function BulkActions({
     }
   }
 
+  function openAll() {
+    setError(null)
+    if (urls.length > 5 && !confirm(`Open ${urls.length} tabs?`)) return
+    const blocked = urls.filter((url) => !window.open(url, '_blank', 'noopener'))
+    if (blocked.length > 0) {
+      setError(
+        `${blocked.length} of ${urls.length} tabs blocked — allow popups for this site`,
+      )
+    }
+  }
+
   return (
     <div className="panel flex flex-col gap-2 p-3">
       <div className="flex items-center justify-between">
@@ -52,6 +65,15 @@ export function BulkActions({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          disabled={urls.length === 0}
+          className="btn"
+          onClick={openAll}
+        >
+          open {urls.length}
+        </button>
+
         <form onSubmit={submitTags} className="flex items-center gap-1">
           <input
             type="text"

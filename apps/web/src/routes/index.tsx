@@ -1,4 +1,4 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -6,7 +6,7 @@ import { AddBookmarkForm } from '~/components/AddBookmarkForm'
 import { BookmarkList } from '~/components/BookmarkList'
 import { BulkActions } from '~/components/BulkActions'
 import { Logo } from '~/components/Logo'
-import { authClient } from '~/lib/auth'
+import { SignOut } from '~/components/SignOut'
 import { listBookmarks } from '~/lib/bookmarks'
 import { isBookmarkSort } from '~/lib/bookmarks.types'
 import type { BookmarkFilters, BookmarkSort } from '~/lib/bookmarks.types'
@@ -28,8 +28,8 @@ type BookmarkSearch = {
   q?: string
   tag?: string
   collection?: string
+  host?: string
   sort?: BookmarkSort
-  status?: 'active' | 'archived'
 }
 
 const SORTS: { value: BookmarkSort; label: string }[] = [
@@ -42,10 +42,11 @@ const SORTS: { value: BookmarkSort; label: string }[] = [
 
 function filtersFor(search: BookmarkSearch): BookmarkFilters {
   return {
-    status: search.status === 'archived' ? 'archived' : 'active',
+    status: 'active',
     q: search.q,
     tag: search.tag,
     collection: search.collection,
+    host: search.host,
     sort: search.sort,
   }
 }
@@ -58,8 +59,8 @@ export const Route = createFileRoute('/')({
       typeof search.collection === 'string' && search.collection
         ? search.collection
         : undefined,
+    host: typeof search.host === 'string' && search.host ? search.host : undefined,
     sort: isBookmarkSort(search.sort) ? search.sort : undefined,
-    status: search.status === 'archived' ? 'archived' : undefined,
   }),
   beforeLoad: async () => {
     const session = await fetchSession()
@@ -72,6 +73,7 @@ export const Route = createFileRoute('/')({
     q: search.q,
     tag: search.tag,
     collection: search.collection,
+    host: search.host,
     sort: search.sort,
   }),
   loader: async ({ context, deps }) => {
@@ -111,7 +113,6 @@ function Home() {
   const { staleAt } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
 
   const filters = filtersFor(search)
   const { data: bookmarks } = useSuspenseQuery({
@@ -140,8 +141,9 @@ function Home() {
   } | null>(null)
   const [searchName, setSearchName] = useState('')
   const manual = search.sort === 'manual'
-  const archivedView = search.status === 'archived'
   const [query, setQuery] = useState(search.q ?? '')
+  const [hostQuery, setHostQuery] = useState(search.host ?? '')
+  const [showAllTags, setShowAllTags] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [activeIndex, setActiveIndex] = useState(-1)
 
@@ -163,7 +165,10 @@ function Home() {
     }
   }, [filterSignature])
 
-  const hasFilters = Boolean(search.q || search.tag || search.collection)
+  const hasFilters = Boolean(search.q || search.tag || search.collection || search.host)
+  const visibleTags = showAllTags
+    ? tags
+    : tags.filter((tag, index) => index < 8 || tag.name === search.tag)
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -236,7 +241,7 @@ function Home() {
         trashBookmark.mutate(active.id)
         setActiveIndex(-1)
       }
-      if (event.key === 'a' && !archivedView) {
+      if (event.key === 'a') {
         event.preventDefault()
         archiveBookmark.mutate(active.id)
         setActiveIndex(-1)
@@ -245,7 +250,7 @@ function Home() {
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [bookmarks, activeIndex, navigate, trashBookmark, archiveBookmark, archivedView])
+  }, [bookmarks, activeIndex, navigate, trashBookmark, archiveBookmark])
 
   function submitSearch(event: FormEvent) {
     event.preventDefault()
@@ -255,16 +260,10 @@ function Home() {
         q: query.trim() || undefined,
         tag: search.tag,
         collection: search.collection,
+        host: search.host,
         sort: search.sort,
-        status: search.status,
       },
     })
-  }
-
-  async function signOut() {
-    await authClient.signOut()
-    queryClient.clear()
-    await navigate({ to: '/login' })
   }
 
   return (
@@ -280,27 +279,14 @@ function Home() {
           </span>
         </div>
         <nav className="flex items-center gap-4 font-mono text-xs text-ink-muted">
-          {archivedView ? (
-            <Link to="/" search={{}} className="transition-colors hover:text-ink">
-              active
-            </Link>
-          ) : (
-            <Link
-              to="/"
-              search={{ status: 'archived' }}
-              className="transition-colors hover:text-ink"
-            >
-              archived
-            </Link>
-          )}
+          <Link to="/archive" className="transition-colors hover:text-ink">
+            archive
+          </Link>
           <Link to="/collections" className="transition-colors hover:text-ink">
             collections
           </Link>
-          <Link to="/trash" className="transition-colors hover:text-ink">
-            trash
-          </Link>
-          <Link to="/cleanup" className="transition-colors hover:text-ink">
-            cleanup
+          <Link to="/tags" className="transition-colors hover:text-ink">
+            tags
           </Link>
           <Link to="/insights" className="transition-colors hover:text-ink">
             insights
@@ -308,13 +294,7 @@ function Home() {
           <Link to="/settings" className="transition-colors hover:text-ink">
             settings
           </Link>
-          <button
-            type="button"
-            onClick={signOut}
-            className="transition-colors hover:text-ink"
-          >
-            sign out
-          </button>
+          <SignOut />
         </nav>
       </header>
 
@@ -354,16 +334,17 @@ function Home() {
                       filter.explanation ??
                       `q=${filter.q ?? '—'} tag=${filter.tag ?? '—'} collection=${filter.collection ?? '—'}`,
                   })
-                  void navigate({
-                    to: '/',
-                    search: {
-                      q: filter.q,
-                      tag: filter.tag,
-                      collection: filter.collection,
-                      sort: filter.sort,
-                      status: filter.status === 'archived' ? 'archived' : undefined,
-                    },
-                  })
+                  const target = {
+                    q: filter.q,
+                    tag: filter.tag,
+                    collection: filter.collection,
+                    sort: filter.sort,
+                  }
+                  if (filter.status && filter.status !== 'active') {
+                    void navigate({ to: '/archive', search: { status: filter.status } })
+                  } else {
+                    void navigate({ to: '/', search: target })
+                  }
                 },
                 onError: (cause) =>
                   setSmartNote({
@@ -401,8 +382,8 @@ function Home() {
                     q: saved.query.q,
                     tag: saved.query.tag,
                     collection: saved.query.collection,
+                    host: saved.query.host,
                     sort: saved.query.sort,
-                    status: saved.query.status === 'archived' ? 'archived' : undefined,
                   }}
                   className="chip hover:border-line-strong hover:text-ink"
                 >
@@ -447,6 +428,26 @@ function Home() {
         )}
 
         <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={hostQuery}
+            onChange={(event) => setHostQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              void navigate({
+                to: '/',
+                search: {
+                  q: search.q,
+                  tag: search.tag,
+                  collection: search.collection,
+                  sort: search.sort,
+                  host: hostQuery.trim().toLowerCase() || undefined,
+                },
+              })
+            }}
+            placeholder="host, e.g. doc.rust-lang.org"
+            aria-label="Filter by host"
+            className="field px-2 py-1 font-mono text-xs"
+          />
           <select
             value={search.collection ?? ''}
             onChange={(event) =>
@@ -456,6 +457,7 @@ function Home() {
                   q: search.q,
                   tag: search.tag,
                   sort: search.sort,
+                  host: search.host,
                   collection: event.target.value || undefined,
                 },
               })
@@ -481,6 +483,7 @@ function Home() {
                   q: search.q,
                   tag: search.tag,
                   collection: search.collection,
+                  host: search.host,
                   sort: event.target.value as BookmarkSort,
                 },
               })
@@ -495,7 +498,7 @@ function Home() {
             ))}
           </select>
 
-          {tags.map((tag) => {
+          {visibleTags.map((tag) => {
             const active = search.tag === tag.name
             return (
               <button
@@ -508,6 +511,7 @@ function Home() {
                       q: search.q,
                       collection: search.collection,
                       sort: search.sort,
+                      host: search.host,
                       tag: active ? undefined : tag.name,
                     },
                   })
@@ -522,6 +526,16 @@ function Home() {
               </button>
             )
           })}
+
+          {!showAllTags && tags.length > visibleTags.length && (
+            <button
+              type="button"
+              onClick={() => setShowAllTags(true)}
+              className="chip transition-colors hover:border-line-strong hover:text-ink"
+            >
+              +{tags.length - visibleTags.length} more
+            </button>
+          )}
 
           {hasFilters && (
             <button
@@ -541,6 +555,9 @@ function Home() {
       {selected.size > 0 && (
         <BulkActions
           ids={[...selected]}
+          urls={bookmarks
+            .filter((bookmark) => selected.has(bookmark.id))
+            .map((bookmark) => bookmark.url)}
           collections={collections}
           onClear={() => setSelected(new Set())}
         />

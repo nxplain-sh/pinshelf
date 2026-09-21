@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { env } from 'cloudflare:workers'
 import { db } from '~/db/index.server'
-import { bookmarks } from '~/db/schema'
+import { bookmarks, settings } from '~/db/schema'
 import { fetchHtml } from '~/lib/metadata.server'
 
 // One snapshot per bookmark, capped so a huge page cannot fill the bucket.
@@ -68,4 +68,25 @@ export async function readArchive(key: string) {
 
 export async function deleteArchiveFor(id: string): Promise<void> {
   await env.BACKUPS.delete(keyFor(id))
+}
+
+export async function getAutoArchive(): Promise<boolean> {
+  const [row] = await db
+    .select({ autoArchive: settings.autoArchive })
+    .from(settings)
+    .where(eq(settings.id, 'default'))
+    .limit(1)
+  return row?.autoArchive ?? false
+}
+
+export async function setAutoArchive(enabled: boolean): Promise<boolean> {
+  const now = new Date()
+  await db
+    .insert(settings)
+    .values({ id: 'default', autoArchive: enabled, updatedAt: now })
+    .onConflictDoUpdate({
+      target: settings.id,
+      set: { autoArchive: enabled, updatedAt: now },
+    })
+  return enabled
 }

@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
 import { browser } from 'wxt/browser'
-import { fetchCollections, saveBookmark } from '@/utils/api'
+import { askBookmark, fetchCollections, findSaved, saveBookmark } from '@/utils/api'
 import type { Collection } from '@/utils/api'
-import { DEFAULT_API_BASE_URL, apiBaseUrl, apiToken } from '@/utils/settings'
+import {
+  DEFAULT_API_BASE_URL,
+  apiBaseUrl,
+  apiToken,
+  savedPageIndicator,
+} from '@/utils/settings'
 
 type Message = { kind: 'ok' | 'error'; text: string }
 
@@ -20,6 +25,9 @@ export function App() {
   const [collections, setCollections] = useState<Collection[]>([])
   const [message, setMessage] = useState<Message | null>(null)
   const [pending, setPending] = useState(false)
+  const [indicator, setIndicator] = useState(true)
+  const [tabCount, setTabCount] = useState(0)
+  const [answer, setAnswer] = useState<{ text: string; source: string } | null>(null)
 
   useEffect(() => {
     void (async () => {
@@ -31,6 +39,10 @@ export function App() {
       setHasToken(Boolean(storedToken))
       setShowSettings(!storedToken)
       setTokenDraft(storedToken ?? '')
+      setIndicator(await savedPageIndicator.getValue())
+
+      const tabs = await browser.tabs.query({ currentWindow: true })
+      setTabCount(tabs.filter((entry) => /^https?:/i.test(entry.url ?? '')).length)
 
       const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
       setPageUrl(tab?.url ?? '')
@@ -99,6 +111,67 @@ export function App() {
     setPending(false)
   }
 
+  async function summarise() {
+    setPending(true)
+    setMessage(null)
+    setAnswer(null)
+
+    const existing = await findSaved(pageUrl)
+    const bookmarkId = existing.ok ? existing.data.bookmarks[0]?.id : undefined
+    if (!bookmarkId) {
+      setMessage({ kind: 'error', text: 'save the page first, then ask' })
+      setPending(false)
+      return
+    }
+
+    const result = await askBookmark(bookmarkId, 'summary')
+    if (result.ok) setAnswer(result.data)
+    else setMessage({ kind: 'error', text: result.error })
+    setPending(false)
+  }
+
+  async function openSidebar() {
+    const panel = (
+      browser as unknown as {
+        sidePanel?: { open: (options: { windowId: number }) => Promise<void> }
+      }
+    ).sidePanel
+    if (!panel) {
+      setMessage({ kind: 'error', text: 'the sidebar needs Chrome or Edge' })
+      return
+    }
+    const window = await browser.windows.getCurrent()
+    if (window.id === undefined) return
+    await panel.open({ windowId: window.id })
+    await browser.windows.remove(window.id)
+  }
+
+  async function saveAllTabs() {
+    setPending(true)
+    setMessage(null)
+
+    const tabs = await browser.tabs.query({ currentWindow: true })
+    const urls = tabs
+      .map((entry) => entry.url ?? '')
+      .filter((url) => /^https?:/i.test(url))
+
+    let saved = 0
+    let duplicate = 0
+    let failed = 0
+    for (const url of urls) {
+      const result = await saveBookmark({ url })
+      if (!result.ok) failed++
+      else if (result.data.duplicate) duplicate++
+      else saved++
+    }
+
+    setMessage({
+      kind: failed > 0 ? 'error' : 'ok',
+      text: `saved ${saved} · already there ${duplicate}${failed > 0 ? ` · failed ${failed}` : ''}`,
+    })
+    setPending(false)
+  }
+
   if (!ready) {
     return (
       <div className="wrap">
@@ -143,6 +216,17 @@ export function App() {
           <span className="muted">
             create one at {baseUrl.replace(/\/+$/, '')}/settings
           </span>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={indicator}
+              onChange={(event) => {
+                setIndicator(event.target.checked)
+                void savedPageIndicator.setValue(event.target.checked)
+              }}
+            />
+            saved-page badge
+          </label>
           <div className="row">
             <button type="button" className="btn-primary" onClick={saveSettings}>
               Save settings
@@ -196,9 +280,37 @@ export function App() {
             >
               {pending ? 'saving…' : 'Save'}
             </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={pending || !hasToken || tabCount === 0}
+              onClick={saveAllTabs}
+              title="Save every open tab in this window"
+            >
+              all tabs ({tabCount})
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={pending || !hasToken || !pageUrl}
+              onClick={summarise}
+              title="Ask the configured model to summarise this page"
+            >
+              summarise
+            </button>
+            <button type="button" className="btn" onClick={openSidebar}>
+              sidebar
+            </button>
             {!hasToken && <span className="muted">set a token in settings first</span>}
           </div>
         </>
+      )}
+
+      {answer && (
+        <div className="answer">
+          <span className="muted">summary · read from {answer.source}</span>
+          <p>{answer.text}</p>
+        </div>
       )}
 
       {message && (

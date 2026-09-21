@@ -218,6 +218,14 @@ volumes:
           </li>
           <li>Save your first page from the add box, or with the extension shortcut.</li>
         </ol>
+        <p>
+          The home list is your active bookmarks; <code>archive</code> holds the archived
+          and trash views, <code>tags</code> renames and merges tags, and the
+          <code>toolbox</code> button (bottom right) runs cleanup scans, suggests tag
+          merges, finds duplicates, and asks the model about a page. <code>preview</code>
+          on any row opens the page in a small window, re-served without scripts so
+          framing blocks do not apply.
+        </p>
 
         <h2 id="reverse-proxy">Behind a reverse proxy</h2>
         <p>
@@ -311,14 +319,18 @@ volumes:
         </ol>
         <p>
           The popup shows the current tab's URL and title, comma-separated tags, a
-          collection picker, and a save button that reports saved or already saved.
-          Right-click a page or a link → Save to pinshelf, and the toolbar badge flashes ✓
-          on success and ! on failure. Token and base URL are stored in
+          collection picker, a save button that reports saved or already saved, and an
+          <em>all tabs</em> button that saves every open tab in the window. Right-click a
+          page or a link → Save to pinshelf, and the toolbar badge flashes ✓ on success
+          and ! on failure. Tabs whose url is already saved get a ✓ badge, checked on
+          navigation only. Type <code>pin</code> plus a space in the address bar to search
+          the library from the omnibox. Token and base URL are stored in
           <code>browser.storage.local</code> and never synced anywhere else.
         </p>
         <p>
           Permissions stay narrow: <code>activeTab</code>, <code>contextMenus</code>,
-          <code>storage</code>, and host access to
+          <code>storage</code>, <code>tabs</code> (open tabs for the all-tabs button and
+          the saved-page badge), <code>sidePanel</code>, and host access to
           <code>https://app.pinshelf.app/*</code> and
           <code>http://localhost:3000/*</code>. No other origin is reachable.
         </p>
@@ -362,18 +374,21 @@ volumes:
         </ul>
         <p>
           The rest lives in Settings: API tokens for the extension and any other client,
-          AI cleanup, backups, import, and export. The API has an interactive reference at
+          AI, backups, import, and export. The API has an interactive reference at
           <code>/api-docs</code> and an OpenAPI document at
           <code>/api/openapi.json</code>; every client-facing route takes
-          <code>Authorization: Bearer &lt;token&gt;</code>.
+          <code>Authorization: Bearer &lt;token&gt;</code>. The same tokens work with the
+          MCP endpoint at <code>POST /mcp</code>, so ChatGPT, Claude, and other MCP
+          clients can search, save, and organise the library directly.
         </p>
         <p>
-          AI cleanup is bring-your-own-provider: set a base URL, model, and API key for
-          any endpoint that speaks <code>/chat/completions</code>, including a local
-          Ollama or vLLM. The key is stored in your database and never returned to the
-          browser after saving. The cleanup page proposes duplicate groups to trash plus
-          tags, descriptions, and collections; nothing is applied until you check it, and
-          duplicates go to trash, not deletion.
+          AI is bring-your-own-provider: set a base URL, model, and API key for any
+          endpoint that speaks <code>/chat/completions</code>, including a local Ollama or
+          vLLM. The key is stored in your database and never returned to the browser after
+          saving. The toolbox proposes duplicate groups to trash plus tags, descriptions,
+          and collections, merges near-duplicate tags, and can summarise a single bookmark
+          from its snapshot or YouTube transcript; nothing is applied until you check it,
+          and duplicates go to trash, not deletion.
         </p>
 
         <h2 id="shortcuts">Keyboard shortcuts</h2>
@@ -393,10 +408,10 @@ esc            close</pre>
 
         <h2 id="import-export">Import &amp; export</h2>
         <p>
-          Settings → Import takes four formats, detected by content rather than file
-          extension. Non-http entries such as bookmarklets are skipped, duplicates are
-          skipped by URL, and imports never fetch metadata: titles and descriptions come
-          from the file.
+          Settings → Import / export takes four formats, detected by content rather than
+          file extension. Non-http entries such as bookmarklets are skipped, duplicates
+          are skipped by URL, and imports never fetch metadata: titles and descriptions
+          come from the file.
         </p>
         <ul class="bullets">
           <li>

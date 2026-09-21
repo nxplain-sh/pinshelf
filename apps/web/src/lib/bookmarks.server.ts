@@ -5,12 +5,28 @@ import {
   tagNameKey,
   urlHash,
 } from '@pinshelf/shared'
-import { and, asc, desc, eq, inArray, isNull, lt, notExists, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  like,
+  lt,
+  notExists,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { db } from '~/db/index.server'
 import { bookmarkTags, bookmarks, collections, tags } from '~/db/schema'
 import type { Bookmark } from '~/db/schema'
 import { ID_CHUNK, ROW_CHUNK, chunk } from '~/lib/db-utils'
-import { deleteArchiveFor } from '~/lib/archive.server'
+import {
+  archiveBookmarkPage,
+  deleteArchiveFor,
+  getAutoArchive,
+} from '~/lib/archive.server'
 import { fetchMetadata } from '~/lib/metadata.server'
 import type {
   BookmarkFilters,
@@ -80,6 +96,26 @@ export async function queryBookmarks(
   filters: BookmarkFilters,
 ): Promise<BookmarkListItem[]> {
   const conditions = [eq(bookmarks.status, filters.status)]
+
+  if (filters.url) {
+    try {
+      conditions.push(eq(bookmarks.urlHash, await urlHash(normalizeUrl(filters.url))))
+    } catch {
+      return []
+    }
+  }
+
+  if (filters.host) {
+    const host = filters.host
+      .trim()
+      .toLowerCase()
+      .replace(/^www\./, '')
+    const hostMatch = or(
+      like(bookmarks.url, `https://${host}/%`),
+      like(bookmarks.url, `http://${host}/%`),
+    )
+    if (hostMatch) conditions.push(hostMatch)
+  }
 
   if (filters.collection === 'unsorted') {
     conditions.push(isNull(bookmarks.collectionId))
@@ -212,6 +248,13 @@ export async function createBookmarkRecord(
   }
 
   const bookmark = await refreshMetadataFor(created)
+
+  // Inline, like metadata (ADR-0006): a second request would need a queue, and
+  // one snapshot per save is cheap at single-user volume.
+  if (await getAutoArchive()) {
+    await archiveBookmarkPage(created.id)
+  }
+
   return { bookmark, duplicate: false, error: null }
 }
 

@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { SignOut } from '~/components/SignOut'
 import { insights } from '~/lib/library'
 import { queryKeys } from '~/lib/queries'
 import { fetchSession } from '~/lib/session'
@@ -48,7 +49,10 @@ function InsightsPage() {
         >
           ← pinshelf
         </Link>
-        <span className="font-mono text-xs text-ink-faint">insights</span>
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-xs text-ink-faint">insights</span>
+          <SignOut />
+        </div>
       </header>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

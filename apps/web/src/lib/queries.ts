@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   applyCleanup,
+  askBookmark,
   clearAiKey,
   saveAiSettingsFn,
   smartSearch,
   suggestSmartCollections,
+  suggestTagMerges,
   testAiConnection,
 } from '~/lib/ai'
 import {
@@ -13,7 +15,7 @@ import {
   restoreFromBackup,
   updateBackupRetention,
 } from '~/lib/backup'
-import type { AiProposals } from '~/lib/ai-schemas'
+import type { AiProposals, AskMode } from '~/lib/ai-schemas'
 import {
   archiveBookmark,
   bulkUpdate,
@@ -33,6 +35,7 @@ import type {
   UpdateBookmarkInput,
 } from '~/lib/bookmarks.types'
 import { importBookmarks } from '~/lib/import-export'
+import { readBookmark, saveAutoArchive } from '~/lib/library'
 import {
   addHighlight,
   archiveBookmark as archiveBookmarkPage,
@@ -65,6 +68,7 @@ export const queryKeys = {
   tokens: ['api-tokens'] as const,
   aiSettings: ['ai-settings'] as const,
   backups: ['backups'] as const,
+  autoArchive: ['auto-archive'] as const,
   insights: ['insights'] as const,
   savedSearches: ['saved-searches'] as const,
   shareLinks: (id: string) => ['share-links', id] as const,
@@ -369,6 +373,26 @@ export function useTestAiConnection() {
   return useMutation({ mutationFn: () => testAiConnection() })
 }
 
+export function useBookmarkReader(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...queryKeys.bookmarks.detail(id), 'reader'],
+    queryFn: () => readBookmark({ data: { id } }),
+    enabled,
+    retry: false,
+    staleTime: 5 * 60_000,
+  })
+}
+
+export function useAskBookmark(id: string) {
+  return useMutation({
+    mutationFn: (mode: AskMode) => askBookmark({ data: { id, mode } }),
+  })
+}
+
+export function useSuggestTagMerges() {
+  return useMutation({ mutationFn: () => suggestTagMerges() })
+}
+
 export function useApplyCleanup() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -377,6 +401,16 @@ export function useApplyCleanup() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.bookmarks.all })
       void queryClient.invalidateQueries({ queryKey: queryKeys.tags })
       void queryClient.invalidateQueries({ queryKey: queryKeys.collections })
+    },
+  })
+}
+
+export function useSaveAutoArchive() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (enabled: boolean) => saveAutoArchive({ data: { enabled } }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.autoArchive })
     },
   })
 }
