@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { AppHeader, PageHeading } from '~/components/AppHeader'
 import { BookmarkList } from '~/components/BookmarkList'
-import { SignOut } from '~/components/SignOut'
 import { listBookmarks } from '~/lib/bookmarks'
 import { queryKeys } from '~/lib/queries'
 import { fetchSession } from '~/lib/session'
@@ -35,6 +35,14 @@ export const Route = createFileRoute('/archive/')({
   component: ArchivePage,
 })
 
+// Both tabs share the /archive path, and the router matches search params
+// partially, so it would mark "archived" active on the trash view as well.
+// The active segment comes from `view` instead of data-status.
+const SEGMENT =
+  'rounded-md border-2 px-3 py-1 font-mono text-xs font-bold transition-colors'
+const SEGMENT_ACTIVE = `${SEGMENT} border-line bg-accent text-ink shadow-hard-xs`
+const SEGMENT_IDLE = `${SEGMENT} border-transparent text-ink-muted hover:border-line hover:bg-surface-hover hover:text-ink`
+
 function ArchivePage() {
   const { status } = Route.useSearch()
   const view = status === 'trashed' ? 'trashed' : 'archived'
@@ -44,38 +52,33 @@ function ArchivePage() {
   })
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-5 p-6">
-      <header className="flex items-center justify-between border-b border-line pb-4">
-        <Link
-          to="/"
-          className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
-        >
-          ← pinshelf
-        </Link>
-        <div className="flex items-center gap-4 font-mono text-xs text-ink-muted">
+    <main className="page">
+      <AppHeader />
+      <PageHeading
+        title="archive"
+        note={
+          view === 'archived'
+            ? 'taken off the shelf, nothing lost — restore puts one back'
+            : 'restore puts a bookmark back · delete removes it for good'
+        }
+      >
+        <div className="flex items-center gap-1 rounded-lg border-2 border-line bg-surface p-1 shadow-hard-xs">
           <Link
             to="/archive"
             search={{}}
-            className={view === 'archived' ? 'text-ink' : 'hover:text-ink'}
+            className={view === 'archived' ? SEGMENT_ACTIVE : SEGMENT_IDLE}
           >
             archived
           </Link>
           <Link
             to="/archive"
             search={{ status: 'trashed' }}
-            className={view === 'trashed' ? 'text-ink' : 'hover:text-ink'}
+            className={view === 'trashed' ? SEGMENT_ACTIVE : SEGMENT_IDLE}
           >
             trash
           </Link>
-          <SignOut />
         </div>
-      </header>
-
-      <p className="font-mono text-[11px] text-ink-faint">
-        {view === 'archived'
-          ? 'taken off the shelf, nothing lost — restore puts one back'
-          : 'restore puts a bookmark back · delete removes it for good'}
-      </p>
+      </PageHeading>
 
       <BookmarkList bookmarks={bookmarks} />
     </main>

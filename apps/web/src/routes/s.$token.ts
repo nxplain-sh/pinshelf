@@ -19,24 +19,45 @@ function page(title: string, body: string, status = 200): Response {
     <meta name="robots" content="noindex" />
     <title>${escapeHtml(title)}</title>
     <style>
-      :root { color-scheme: dark; }
+      /* Mirrors the app tokens in styles/app.css: this page is plain HTML. */
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
       body {
-        margin: 0 auto; max-width: 40rem; padding: 3rem 1.5rem;
-        background: #131110; color: #f2ece2;
-        font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        line-height: 1.65;
+        margin: 0; min-height: 100vh; padding: 3rem 1rem;
+        background-color: #f4eee1; color: #131110;
+        background-image: radial-gradient(rgba(19, 17, 16, 0.13) 1px, transparent 1.4px);
+        background-size: 22px 22px;
+        font-family: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
       }
-      a { color: #c9a227; }
-      .meta { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 12px; color: #b3a99b; }
-      .tags { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 6px; }
-      .tag { border: 1px solid #2e2925; border-radius: 4px; padding: 2px 8px;
-        font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: #b3a99b; }
-      .notes { margin-top: 1.5rem; border: 1px solid #2e2925; border-radius: 6px;
-        padding: 1rem; white-space: pre-wrap; color: #b3a99b; }
+      main {
+        margin: 0 auto; max-width: 40rem; padding: 1.5rem;
+        background: #fffcf5; border: 2px solid #131110; border-radius: 14px;
+        box-shadow: 8px 8px 0 0 #131110;
+      }
+      h1 { margin: 0 0 0.5rem; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.02em;
+        overflow-wrap: anywhere; }
+      p { margin: 0.75rem 0 0; }
+      a { color: #131110; font-weight: 600; text-decoration: underline;
+        text-decoration-color: #fcc93a; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+      .meta { margin: 0; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px; color: #463e36; overflow-wrap: anywhere; }
+      .tags { margin-top: 1.25rem; display: flex; flex-wrap: wrap; gap: 6px; }
+      .tag { border: 2px solid #131110; border-radius: 999px; padding: 0 8px; background: #fffcf5;
+        font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 11px; font-weight: 600;
+        line-height: 18px; color: #131110; }
+      .tag:nth-child(5n + 1) { background: #fcc93a; }
+      .tag:nth-child(5n + 2) { background: #ffa3c8; }
+      .tag:nth-child(5n + 3) { background: #92d2ff; }
+      .tag:nth-child(5n + 4) { background: #9be8b4; }
+      .tag:nth-child(5n + 5) { background: #c8b6ff; }
+      .notes { margin-top: 1.5rem; border: 2px solid #131110; border-radius: 10px;
+        background: #ece4d4; padding: 1rem; white-space: pre-wrap; color: #463e36; }
+      .foot { margin-top: 1.5rem; padding-top: 1rem; border-top: 2px solid #d8cebb; color: #6b6155; }
+      @media (min-width: 640px) { main { padding: 2rem; } h1 { font-size: 2.25rem; } }
     </style>
   </head>
-  <body>${body}</body>
+  <body><main>${body}</main></body>
 </html>`
   return new Response(html, {
     status,
@@ -72,7 +93,7 @@ export const Route = createFileRoute('/s/$token')({
   ${bookmark.description ? `<p>${escapeHtml(bookmark.description)}</p>` : ''}
   ${tags ? `<div class="tags">${tags}</div>` : ''}
   ${bookmark.notes ? `<div class="notes">${escapeHtml(bookmark.notes)}</div>` : ''}
-  <p class="meta">shared from pinshelf</p>`,
+  <p class="meta foot">shared from pinshelf</p>`,
         )
       },
     },

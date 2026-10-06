@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { Logo } from '~/components/Logo'
 import { useEffect, useRef, useState } from 'react'
+import { Logo } from '~/components/Logo'
 import type { BookmarkListItem } from '~/lib/bookmarks.types'
 import {
   useArchiveBookmark,
@@ -10,6 +10,7 @@ import {
   useRestoreBookmark,
   useTrashBookmark,
 } from '~/lib/queries'
+import { tagTone } from '~/lib/tag-tone'
 
 function faviconFor(bookmark: BookmarkListItem): string | null {
   return bookmark.faviconUrl ?? null
@@ -80,33 +81,41 @@ export function BookmarkList({
   }, [preview])
 
   if (bookmarks.length === 0) {
-    return (
-      <p className="border border-dashed border-line py-10 text-center font-mono text-xs text-ink-faint">
-        nothing here yet
-      </p>
-    )
+    return <p className="empty">nothing here yet</p>
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-3">
       {selectable && onToggleAll && (
-        <div className="flex items-center gap-2 px-1">
+        <div className="flex items-center gap-2.5 pl-4.5">
           <input
             ref={selectAllRef}
             type="checkbox"
             checked={allSelected}
             onChange={() => onToggleAll(bookmarks.map((bookmark) => bookmark.id))}
-            className="checkbox h-3.5 w-3.5 shrink-0"
+            className="checkbox"
             aria-label="Select all visible bookmarks"
           />
-          <span className="font-mono text-[11px] text-ink-faint">
+          <span className="font-mono text-[11px] font-semibold text-ink-muted">
             {allSelected ? 'clear selection' : `select all ${bookmarks.length}`}
           </span>
         </div>
       )}
-      <ul className="flex flex-col gap-1.5">
+      <ul className="flex flex-col gap-3">
         {bookmarks.map((bookmark) => {
           const favicon = faviconFor(bookmark)
+          const active = activeId === bookmark.id
+          const over = overId === bookmark.id
+          const dragging = dragId === bookmark.id
+          // Rows lift off their shadow on hover, like buttons. Never while a drag
+          // is running: a moving row under the pointer makes drop targets flicker.
+          const lift = dragging
+            ? 'border-dashed opacity-50'
+            : active
+              ? '-translate-0.5 shadow-hard-lg'
+              : dragId
+                ? 'shadow-hard'
+                : 'shadow-hard hover:-translate-0.5 hover:shadow-hard-lg'
           return (
             <li
               key={bookmark.id}
@@ -142,57 +151,72 @@ export function BookmarkList({
                 setDragId(null)
                 setOverId(null)
               }}
-              className={`group flex gap-3 rounded-md border bg-surface p-3 transition-colors ${
-                overId === bookmark.id || activeId === bookmark.id
-                  ? 'border-accent'
-                  : 'border-line hover:border-line-strong'
-              } ${dragId === bookmark.id ? 'opacity-50' : ''}`}
+              className={`group relative grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-3 rounded-lg border-2 border-line p-4 transition-[translate,box-shadow,opacity] duration-150 ease-out ${lift} ${over ? 'bg-surface-hover' : 'bg-surface'} ${
+                // Keyboard highlight (j/k): a solid accent spine down the left edge.
+                active
+                  ? 'before:absolute before:inset-y-0 before:left-0 before:w-2 before:rounded-l-[calc(var(--radius-lg)-2px)] before:border-r-2 before:border-line before:bg-accent'
+                  : ''
+              } ${
+                // Drop target: a bar in the gap above, where the dragged row lands.
+                over
+                  ? 'after:pointer-events-none after:absolute after:inset-x-2 after:-top-[11px] after:h-2 after:rounded-full after:border-2 after:border-line after:bg-accent'
+                  : ''
+              }`}
             >
-              {draggable && (
-                <span
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 cursor-grab font-mono text-xs text-ink-faint select-none"
-                >
-                  ⠿
-                </span>
-              )}
-              {selectable && (
-                <input
-                  type="checkbox"
-                  checked={selected?.has(bookmark.id) ?? false}
-                  onChange={() => onToggle?.(bookmark.id)}
-                  className="checkbox mt-1 h-3.5 w-3.5 shrink-0"
-                  aria-label={`Select ${bookmark.title || bookmark.url}`}
-                />
-              )}
-              {favicon ? (
-                <img
-                  src={favicon}
-                  alt=""
-                  width={16}
-                  height={16}
-                  referrerPolicy="no-referrer"
-                  className="mt-0.5 h-4 w-4 shrink-0 opacity-80"
-                />
-              ) : (
-                // No favicon: the mark at ink-faint, never at full brass, so a
-                // list of them does not light up (docs/design.md rule 9).
-                <Logo size={16} mono className="mt-0.5 shrink-0" />
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-2">
-                  <Link
-                    to="/bookmarks/$id"
-                    params={{ id: bookmark.id }}
-                    className="truncate text-sm font-medium text-ink underline-offset-4 hover:underline"
+              <div className="flex items-start gap-3">
+                {draggable && (
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 shrink-0 cursor-grab font-mono text-base leading-none text-ink-muted select-none"
                   >
-                    {bookmark.title || bookmark.url}
-                  </Link>
-                  <span className="shrink-0 font-mono text-[11px] text-ink-faint">
+                    ⠿
+                  </span>
+                )}
+                {selectable && (
+                  <input
+                    type="checkbox"
+                    checked={selected?.has(bookmark.id) ?? false}
+                    onChange={() => onToggle?.(bookmark.id)}
+                    className="checkbox mt-1.5"
+                    aria-label={`Select ${bookmark.title || bookmark.url}`}
+                  />
+                )}
+                <span
+                  className={`grid size-8 shrink-0 place-items-center rounded-md border-2 border-line transition-colors ${
+                    active ? 'bg-accent' : 'bg-surface'
+                  }`}
+                >
+                  {favicon ? (
+                    <img
+                      src={favicon}
+                      alt=""
+                      width={16}
+                      height={16}
+                      referrerPolicy="no-referrer"
+                      className="size-4"
+                    />
+                  ) : (
+                    // No favicon: the mark at ink-faint, never at full brass, so a
+                    // list of them does not light up (docs/design.md rule 9).
+                    <Logo size={16} mono />
+                  )}
+                </span>
+              </div>
+
+              <div className="flex min-w-0 flex-col gap-1">
+                <Link
+                  to="/bookmarks/$id"
+                  params={{ id: bookmark.id }}
+                  className="line-clamp-2 self-start text-[15px] leading-snug font-semibold text-ink decoration-accent decoration-2 underline-offset-4 wrap-anywhere hover:underline"
+                >
+                  {bookmark.title || bookmark.url}
+                </Link>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="min-w-0 truncate font-mono text-[11px] text-ink-faint">
                     {hostFor(bookmark.url)}
                   </span>
                   {bookmark.collectionName && (
-                    <span className="shrink-0 font-mono text-[11px] text-accent">
+                    <span className="chip bg-surface-hover">
                       /{bookmark.collectionName}
                     </span>
                   )}
@@ -202,101 +226,110 @@ export function BookmarkList({
                     {bookmark.description}
                   </p>
                 )}
-                {bookmark.tags.length > 0 && (
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {bookmark.tags.slice(0, 6).map((tag) => (
-                      <span key={tag} className="chip">
-                        {tag}
-                      </span>
-                    ))}
-                    {bookmark.tags.length > 6 && (
-                      <span className="font-mono text-[11px] text-ink-faint">
-                        +{bookmark.tags.length - 6}
-                      </span>
-                    )}
-                  </div>
-                )}
                 {bookmark.metadataStatus === 'failed' && (
-                  <p className="mt-1 font-mono text-[11px] text-warn">
+                  <p className="mt-1 font-mono text-[11px] font-semibold text-warn">
                     metadata fetch failed
                   </p>
                 )}
                 {bookmark.linkStatus === 'broken' && (
-                  <p className="mt-1 font-mono text-[11px] text-warn">
+                  <p className="mt-1 font-mono text-[11px] font-semibold text-warn">
                     link looks broken
                   </p>
                 )}
               </div>
-              <div className="flex shrink-0 items-start gap-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => setPreview(bookmark)}
+
+              {/* Phones: tags, then the actions as a full-width bar along the bottom. */}
+              <div className="col-span-full flex flex-wrap items-center gap-x-3 gap-y-3 sm:col-span-1 sm:col-start-2">
+                {bookmark.tags.length > 0 && (
+                  <div className="mr-auto flex flex-wrap gap-1.5">
+                    {bookmark.tags.slice(0, 6).map((tag) => (
+                      <span key={tag} className={`chip ${tagTone(tag)}`}>
+                        {tag}
+                      </span>
+                    ))}
+                    {bookmark.tags.length > 6 && (
+                      <span className="chip">+{bookmark.tags.length - 6}</span>
+                    )}
+                  </div>
+                )}
+                <div
+                  className={`flex flex-wrap items-center gap-1.5 max-sm:w-full max-sm:border-t-2 max-sm:border-line-soft max-sm:pt-3 max-sm:*:flex-1 sm:ml-auto ${
+                    // The keyboard highlight shows its row's actions too.
+                    active
+                      ? ''
+                      : 'sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100'
+                  }`}
                 >
-                  preview
-                </button>
-                {bookmark.status === 'active' && (
-                  <>
-                    <a
-                      href={bookmark.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn"
-                    >
-                      open
-                    </a>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => archiveBookmark.mutate(bookmark.id)}
-                    >
-                      archive
-                    </button>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => trashBookmark.mutate(bookmark.id)}
-                    >
-                      trash
-                    </button>
-                  </>
-                )}
-                {bookmark.status === 'archived' && (
-                  <>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => restoreBookmark.mutate(bookmark.id)}
-                    >
-                      unarchive
-                    </button>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => trashBookmark.mutate(bookmark.id)}
-                    >
-                      trash
-                    </button>
-                  </>
-                )}
-                {bookmark.status === 'trashed' && (
-                  <>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => restoreBookmark.mutate(bookmark.id)}
-                    >
-                      restore
-                    </button>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => deleteBookmark.mutate(bookmark.id)}
-                    >
-                      delete
-                    </button>
-                  </>
-                )}
+                  <button
+                    type="button"
+                    className="btn bg-sky"
+                    onClick={() => setPreview(bookmark)}
+                  >
+                    preview
+                  </button>
+                  {bookmark.status === 'active' && (
+                    <>
+                      <a
+                        href={bookmark.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn"
+                      >
+                        open
+                      </a>
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => archiveBookmark.mutate(bookmark.id)}
+                      >
+                        archive
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => trashBookmark.mutate(bookmark.id)}
+                      >
+                        trash
+                      </button>
+                    </>
+                  )}
+                  {bookmark.status === 'archived' && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn bg-mint"
+                        onClick={() => restoreBookmark.mutate(bookmark.id)}
+                      >
+                        unarchive
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => trashBookmark.mutate(bookmark.id)}
+                      >
+                        trash
+                      </button>
+                    </>
+                  )}
+                  {bookmark.status === 'trashed' && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn bg-mint"
+                        onClick={() => restoreBookmark.mutate(bookmark.id)}
+                      >
+                        restore
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => deleteBookmark.mutate(bookmark.id)}
+                      >
+                        delete
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </li>
           )
@@ -304,17 +337,20 @@ export function BookmarkList({
       </ul>
 
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/80 p-4">
+        <div className="overlay flex items-center justify-center p-4">
           <div
             role="dialog"
             aria-modal="true"
             aria-label={`preview of ${preview.title || preview.url}`}
-            className="flex h-[70vh] max-h-[640px] min-h-0 w-full max-w-3xl flex-col rounded-lg border border-line bg-surface"
+            className="dialog flex h-[70vh] max-h-[640px] min-h-0 w-full max-w-3xl flex-col"
           >
-            <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line p-3">
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm">{preview.title || preview.url}</span>
-                <span className="truncate font-mono text-[11px] text-ink-faint">
+            <header className="panel-head rounded-t-[calc(var(--radius-xl)-2px)] bg-sky">
+              {/* Phones: the buttons drop under the title instead of squeezing it. */}
+              <div className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
+                <span className="truncate text-sm font-bold text-ink">
+                  {preview.title || preview.url}
+                </span>
+                <span className="truncate font-mono text-[11px] text-ink-muted">
                   {preview.url}
                 </span>
               </div>
@@ -348,7 +384,7 @@ function ReaderBody({
 
   if (reader.isPending) {
     return (
-      <p className="flex-1 p-6 text-center font-mono text-xs text-ink-faint">
+      <p className="grid flex-1 place-items-center p-6 font-mono text-xs text-ink-faint">
         reading the page…
       </p>
     )
@@ -357,14 +393,14 @@ function ReaderBody({
   if (reader.isError) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="font-mono text-xs text-danger">
+        <p className="notice bg-coral">
           {reader.error instanceof Error
             ? reader.error.message
             : 'could not read the page'}
         </p>
         <button
           type="button"
-          className="btn"
+          className="btn bg-sky"
           disabled={archivePage.isPending}
           onClick={() => archivePage.mutate(id)}
         >
@@ -381,9 +417,9 @@ function ReaderBody({
         srcDoc={reader.data.html}
         sandbox=""
         referrerPolicy="no-referrer"
-        className="min-h-0 w-full flex-1"
+        className="min-h-0 w-full flex-1 bg-surface"
       />
-      <footer className="border-t border-line p-2">
+      <footer className="rounded-b-[calc(var(--radius-xl)-2px)] border-t-2 border-line bg-surface-hover px-4 py-2">
         <span className="font-mono text-[11px] text-ink-faint">
           {reader.data.source === 'snapshot'
             ? 'rendered from your snapshot · scripts off'

@@ -27,8 +27,8 @@ const SECURITY_HEADERS = {
 }
 
 // Names are stable (no content hashes), so HTML, CSS, and JS keep revalidating;
-// only the binary brand assets get a real lifetime.
-const CACHEABLE = /\.(png|svg|ico|webp)$/
+// only the binary brand assets and the self-hosted fonts get a real lifetime.
+const CACHEABLE = /\.(png|svg|ico|webp|woff2)$/
 
 export default {
   async fetch(request, env) {

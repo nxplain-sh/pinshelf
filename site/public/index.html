@@ -16,7 +16,22 @@
     <meta property="og:image" content="https://pinshelf.app/assets/social-card.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f4eee1" />
     <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="preload"
+      href="fonts/space-grotesk-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="fonts/jetbrains-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <script>
       document.documentElement.classList.add('js')
     </script>
@@ -27,22 +42,25 @@
         <a class="brand" href="./">
           <svg
             class="mark"
-            width="22"
-            height="22"
+            width="30"
+            height="30"
             viewBox="0 0 120 120"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
-            <circle
-              cx="66"
-              cy="46"
-              r="20"
-              fill="none"
-              stroke="var(--steel)"
-              stroke-width="17"
-            />
-            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            <rect width="120" height="120" rx="26" fill="var(--ink)" />
+            <g transform="translate(13.2 13.2) scale(0.78)">
+              <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--brass)" />
+              <circle
+                cx="66"
+                cy="46"
+                r="20"
+                fill="none"
+                stroke="var(--steel)"
+                stroke-width="17"
+              />
+              <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            </g>
           </svg>
           <span class="wordmark">pinshelf</span>
         </a>
@@ -78,7 +96,7 @@
     <main id="main">
       <section class="hero wrap">
         <p class="eyebrow">self-hosted · single user · open source</p>
-        <h1>Your bookmarks, on a shelf only you can reach.</h1>
+        <h1>Your bookmarks, on a <span class="hl">shelf</span> only you can reach.</h1>
         <p class="lede">
           pin it, shelf it, find it. docker compose up on a box you own — or deploy to
           Cloudflare if you would rather not run a server.
@@ -122,34 +140,37 @@
               <div class="shot-identity">
                 <svg
                   class="mark"
-                  width="20"
-                  height="20"
+                  width="26"
+                  height="26"
                   viewBox="0 0 120 120"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
                 >
-                  <rect
-                    x="12"
-                    y="78"
-                    width="96"
-                    height="14"
-                    rx="7"
-                    fill="var(--accent)"
-                  />
-                  <circle
-                    cx="66"
-                    cy="46"
-                    r="20"
-                    fill="none"
-                    stroke="var(--steel)"
-                    stroke-width="17"
-                  />
-                  <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+                  <rect width="120" height="120" rx="26" fill="var(--ink)" />
+                  <g transform="translate(13.2 13.2) scale(0.78)">
+                    <rect
+                      x="12"
+                      y="78"
+                      width="96"
+                      height="14"
+                      rx="7"
+                      fill="var(--brass)"
+                    />
+                    <circle
+                      cx="66"
+                      cy="46"
+                      r="20"
+                      fill="none"
+                      stroke="var(--steel)"
+                      stroke-width="17"
+                    />
+                    <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+                  </g>
                 </svg>
                 <span class="shot-wordmark">pinshelf</span>
-                <span class="shot-user">you@example.com</span>
               </div>
               <nav class="shot-nav">
+                <span class="shot-nav-active">shelf</span>
                 <span>archive</span>
                 <span>collections</span>
                 <span>tags</span>
@@ -167,15 +188,15 @@
             <div class="shot-form-row">
               <span class="shot-field">rust</span>
               <span class="shot-btn">search</span>
-              <span class="shot-btn">smart</span>
+              <span class="shot-btn bg-lilac">smart</span>
             </div>
 
             <div class="shot-filters">
               <span class="shot-select">all bookmarks</span>
               <span class="shot-select">newest first</span>
               <span class="shot-chip shot-chip-active">rust</span>
-              <span class="shot-chip">linux</span>
-              <span class="shot-chip">db</span>
+              <span class="shot-chip bg-accent">linux</span>
+              <span class="shot-chip bg-accent">db</span>
               <span class="shot-clear">clear filters</span>
             </div>
 
@@ -191,8 +212,8 @@
                     <span class="shot-collection">/rust</span>
                   </div>
                   <div class="shot-row-tags">
-                    <span class="shot-chip">rust</span>
-                    <span class="shot-chip">ownership</span>
+                    <span class="shot-chip bg-sky">rust</span>
+                    <span class="shot-chip bg-sky">ownership</span>
                   </div>
                 </div>
                 <div class="shot-actions">
@@ -209,8 +230,8 @@
                     <span class="shot-meta">blog.example.dev</span>
                   </div>
                   <div class="shot-row-tags">
-                    <span class="shot-chip">rust</span>
-                    <span class="shot-chip">errors</span>
+                    <span class="shot-chip bg-sky">rust</span>
+                    <span class="shot-chip bg-mint">errors</span>
                   </div>
                 </div>
               </li>
@@ -223,8 +244,8 @@
                     <span class="shot-collection">/ops</span>
                   </div>
                   <div class="shot-row-tags">
-                    <span class="shot-chip">rust</span>
-                    <span class="shot-chip">async</span>
+                    <span class="shot-chip bg-sky">rust</span>
+                    <span class="shot-chip bg-accent">async</span>
                   </div>
                 </div>
               </li>
@@ -261,7 +282,7 @@
                     <span class="shot-meta">journal.example.net</span>
                   </div>
                   <div class="shot-row-tags">
-                    <span class="shot-chip">parser</span>
+                    <span class="shot-chip bg-accent">parser</span>
                   </div>
                   <p class="shot-warn">metadata fetch failed</p>
                 </div>
@@ -269,7 +290,7 @@
             </ul>
           </div>
         </div>
-        <p class="caption">the app · dark, dense, keyboard-first</p>
+        <p class="caption">the app · bold, dense, keyboard-first</p>
       </section>
 
       <section id="features" class="wrap section">
@@ -279,196 +300,214 @@
         </div>
         <ul class="cards">
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M6 3h8v14l-4-3-4 3z" />
-            </svg>
-            <h3>Save in one click</h3>
+            <div class="card-head bg-accent">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 3h8v14l-4-3-4 3z" />
+              </svg>
+              <h3>Save in one click</h3>
+            </div>
             <p>
               The extension grabs the page you're on, every open tab, or a highlighted
               passage — and badges the tabs already on your shelf.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M3 11V4h7l7 7-7 7z" />
-              <circle cx="6.5" cy="7.5" r="1.2" />
-            </svg>
-            <h3>Collections and tags</h3>
+            <div class="card-head bg-pink">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 11V4h7l7 7-7 7z" />
+                <circle cx="6.5" cy="7.5" r="1.2" />
+              </svg>
+              <h3>Collections and tags</h3>
+            </div>
             <p>
               Group by project, filter by tag. Bulk-edit a hundred rows without a modal in
               sight.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="9" cy="9" r="5.5" />
-              <path d="M13 13l4 4" />
-            </svg>
-            <h3>Find it again</h3>
+            <div class="card-head bg-sky">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="9" cy="9" r="5.5" />
+                <path d="M13 13l4 4" />
+              </svg>
+              <h3>Find it again</h3>
+            </div>
             <p>
               Search titles, hosts and tags from the keyboard. The thing you saved in
               March is two keystrokes away.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" />
-            </svg>
-            <h3>Trash that waits</h3>
+            <div class="card-head bg-mint">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" />
+              </svg>
+              <h3>Trash that waits</h3>
+            </div>
             <p>
               Deleted rows sit in the trash until you say otherwise. Nothing leaves
               without a second look.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M5 3h7l3 3v11H5z" />
-              <path d="M10 9h4M10 12h4" />
-            </svg>
-            <h3>Snapshots and preview</h3>
+            <div class="card-head bg-sky">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 3h7l3 3v11H5z" />
+                <path d="M10 9h4M10 12h4" />
+              </svg>
+              <h3>Snapshots and preview</h3>
+            </div>
             <p>
               Keep the page as it was, then read it in a small window even when the site
               refuses to be framed.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M3 8h14v9H3z" />
-              <path d="M7 8V5h6v3M10 11v3" />
-            </svg>
-            <h3>A toolbox, your model</h3>
+            <div class="card-head bg-lilac">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 8h14v9H3z" />
+                <path d="M7 8V5h6v3M10 11v3" />
+              </svg>
+              <h3>A toolbox, your model</h3>
+            </div>
             <p>
               Cleanup scans, tag merges, and page summaries via any OpenAI-compatible
               endpoint — or none at all.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M7 3v6a3 3 0 0 0 6 0V3" />
-              <path d="M10 12v5" />
-            </svg>
-            <h3>Open to your tools</h3>
+            <div class="card-head bg-accent">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 3v6a3 3 0 0 0 6 0V3" />
+                <path d="M10 12v5" />
+              </svg>
+              <h3>Open to your tools</h3>
+            </div>
             <p>
               A token-scoped REST API and an MCP endpoint, so scripts and assistants use
               the same shelf you do.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="6" y="3" width="8" height="14" rx="1.5" />
-              <path d="M10 14.5h.01" />
-            </svg>
-            <h3>Installs as an app</h3>
+            <div class="card-head bg-mint">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="6" y="3" width="8" height="14" rx="1.5" />
+                <path d="M10 14.5h.01" />
+              </svg>
+              <h3>Installs as an app</h3>
+            </div>
             <p>
               A PWA on the desktop and the phone, plus a browser extension. No store, no
               review queue.
             </p>
           </li>
           <li class="card">
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="10" cy="7" r="3" />
-              <path d="M4 17c0-3 2.7-5 6-5s6 2 6 5" />
-            </svg>
-            <h3>One user: you</h3>
+            <div class="card-head bg-pink">
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="10" cy="7" r="3" />
+                <path d="M4 17c0-3 2.7-5 6-5s6 2 6 5" />
+              </svg>
+              <h3>One user: you</h3>
+            </div>
             <p>
               No teams, no invites, no sharing model to reason about. Your instance
               answers to one login.
@@ -670,28 +709,30 @@ volumes:
         </div>
       </section>
 
-      <section class="wrap section">
-        <h2>Save from wherever you read</h2>
-        <ul class="clients">
-          <li>
-            <p class="num">01 / browser</p>
-            <h3>The extension</h3>
-            <p>
-              Chrome and Firefox. Save a tab, all tabs, or a highlight; search from the
-              address bar; badge what is already saved.
-            </p>
-          </li>
-          <li>
-            <p class="num">02 / phone</p>
-            <h3>Installed as a PWA</h3>
-            <p>Add to home screen and share straight into it from any app.</p>
-          </li>
-          <li>
-            <p class="num">03 / anywhere</p>
-            <h3>Paste a URL</h3>
-            <p>The add box takes a link and sorts out the rest on its own.</p>
-          </li>
-        </ul>
+      <section class="band">
+        <div class="wrap">
+          <h2>Save from wherever you read</h2>
+          <ul class="clients">
+            <li>
+              <p class="num bg-accent">01 / browser</p>
+              <h3>The extension</h3>
+              <p>
+                Chrome and Firefox. Save a tab, all tabs, or a highlight; search from the
+                address bar; badge what is already saved.
+              </p>
+            </li>
+            <li>
+              <p class="num bg-mint">02 / phone</p>
+              <h3>Installed as a PWA</h3>
+              <p>Add to home screen and share straight into it from any app.</p>
+            </li>
+            <li>
+              <p class="num bg-pink">03 / anywhere</p>
+              <h3>Paste a URL</h3>
+              <p>The add box takes a link and sorts out the rest on its own.</p>
+            </li>
+          </ul>
+        </div>
       </section>
 
       <section class="wrap">

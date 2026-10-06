@@ -181,143 +181,162 @@ export function App() {
   }
 
   return (
-    <div className="wrap">
+    <>
       <div className="head">
         <span className="brand">
-          <img src="/mark.svg" alt="" width={14} height={14} />
+          <span className="plate">
+            <img src="/mark.svg" alt="" width={20} height={20} />
+          </span>
           pinshelf
         </span>
         <button
           type="button"
-          className="link"
+          className="btn"
           onClick={() => setShowSettings((value) => !value)}
         >
           {showSettings ? 'cancel' : 'settings'}
         </button>
       </div>
 
-      {showSettings ? (
-        <>
-          <span className="label">api base url</span>
-          <input
-            className="field"
-            value={baseUrl}
-            onChange={(event) => setBaseUrl(event.target.value)}
-            placeholder={DEFAULT_API_BASE_URL}
-          />
-          <span className="label">api token</span>
-          <input
-            className="field"
-            type="password"
-            value={tokenDraft}
-            onChange={(event) => setTokenDraft(event.target.value)}
-            placeholder="paste a token"
-          />
-          <span className="muted">
-            create one at {baseUrl.replace(/\/+$/, '')}/settings
-          </span>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={indicator}
-              onChange={(event) => {
-                setIndicator(event.target.checked)
-                void savedPageIndicator.setValue(event.target.checked)
-              }}
-            />
-            saved-page badge
-          </label>
-          <div className="row">
-            <button type="button" className="btn-primary" onClick={saveSettings}>
-              Save settings
-            </button>
+      <div className="wrap">
+        {showSettings ? (
+          <>
+            <div className="group">
+              <span className="label">api base url</span>
+              <input
+                className="field"
+                value={baseUrl}
+                onChange={(event) => setBaseUrl(event.target.value)}
+                placeholder={DEFAULT_API_BASE_URL}
+              />
+            </div>
+            <div className="group">
+              <span className="label">api token</span>
+              <input
+                className="field"
+                type="password"
+                value={tokenDraft}
+                onChange={(event) => setTokenDraft(event.target.value)}
+                placeholder="paste a token"
+              />
+              <span className="muted">
+                create one at {baseUrl.replace(/\/+$/, '')}/settings
+              </span>
+            </div>
+            <label className="check">
+              <input
+                type="checkbox"
+                className="checkbox"
+                checked={indicator}
+                onChange={(event) => {
+                  setIndicator(event.target.checked)
+                  void savedPageIndicator.setValue(event.target.checked)
+                }}
+              />
+              saved-page badge
+            </label>
+            <div className="row">
+              <button type="button" className="btn-primary" onClick={saveSettings}>
+                Save settings
+              </button>
+              <button
+                type="button"
+                className="btn bg-sky"
+                onClick={() =>
+                  void browser.tabs.create({
+                    url: `${baseUrl.replace(/\/+$/, '')}/settings`,
+                  })
+                }
+              >
+                open instance
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="current">
+              <span className="title">{pageTitle || 'untitled page'}</span>
+              <span className="url">{pageUrl}</span>
+            </div>
+
+            <div className="group">
+              <span className="label">tags</span>
+              <input
+                className="field"
+                value={tags}
+                onChange={(event) => setTags(event.target.value)}
+                placeholder="comma separated"
+              />
+            </div>
+
+            <div className="group">
+              <span className="label">collection</span>
+              <select
+                className="field"
+                value={collectionId}
+                onChange={(event) => setCollectionId(event.target.value)}
+              >
+                <option value="">no collection</option>
+                {collections.map((collection) => (
+                  <option key={collection.id} value={collection.id}>
+                    {collection.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               type="button"
-              className="btn"
-              onClick={() =>
-                void browser.tabs.create({
-                  url: `${baseUrl.replace(/\/+$/, '')}/settings`,
-                })
-              }
-            >
-              open instance
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <span className="title">{pageTitle || 'untitled page'}</span>
-          <span className="url">{pageUrl}</span>
-
-          <span className="label">tags</span>
-          <input
-            className="field"
-            value={tags}
-            onChange={(event) => setTags(event.target.value)}
-            placeholder="comma separated"
-          />
-
-          <span className="label">collection</span>
-          <select
-            className="field"
-            value={collectionId}
-            onChange={(event) => setCollectionId(event.target.value)}
-          >
-            <option value="">no collection</option>
-            {collections.map((collection) => (
-              <option key={collection.id} value={collection.id}>
-                {collection.name}
-              </option>
-            ))}
-          </select>
-
-          <div className="row">
-            <button
-              type="button"
-              className="btn-primary"
+              className="btn-primary btn-wide"
               disabled={pending || !hasToken}
               onClick={save}
             >
               {pending ? 'saving…' : 'Save'}
             </button>
-            <button
-              type="button"
-              className="btn"
-              disabled={pending || !hasToken || tabCount === 0}
-              onClick={saveAllTabs}
-              title="Save every open tab in this window"
-            >
-              all tabs ({tabCount})
-            </button>
-            <button
-              type="button"
-              className="btn"
-              disabled={pending || !hasToken || !pageUrl}
-              onClick={summarise}
-              title="Ask the configured model to summarise this page"
-            >
-              summarise
-            </button>
-            <button type="button" className="btn" onClick={openSidebar}>
-              sidebar
-            </button>
-            {!hasToken && <span className="muted">set a token in settings first</span>}
+            <div className="row row-fill">
+              <button
+                type="button"
+                className="btn"
+                disabled={pending || !hasToken || tabCount === 0}
+                onClick={saveAllTabs}
+                title="Save every open tab in this window"
+              >
+                all tabs ({tabCount})
+              </button>
+              <button
+                type="button"
+                className="btn bg-lilac"
+                disabled={pending || !hasToken || !pageUrl}
+                onClick={summarise}
+                title="Ask the configured model to summarise this page"
+              >
+                summarise
+              </button>
+              <button type="button" className="btn bg-sky" onClick={openSidebar}>
+                sidebar
+              </button>
+            </div>
+            {!hasToken && (
+              <span className="notice bg-accent">set a token in settings first</span>
+            )}
+          </>
+        )}
+
+        {answer && (
+          <div className="answer">
+            <span className="answer-head bg-lilac">
+              summary · read from {answer.source}
+            </span>
+            <p>{answer.text}</p>
           </div>
-        </>
-      )}
+        )}
 
-      {answer && (
-        <div className="answer">
-          <span className="muted">summary · read from {answer.source}</span>
-          <p>{answer.text}</p>
-        </div>
-      )}
-
-      {message && (
-        <span className={message.kind === 'ok' ? 'message-ok' : 'message-error'}>
-          {message.text}
-        </span>
-      )}
-    </div>
+        {message && (
+          <span className={`notice ${message.kind === 'ok' ? 'bg-mint' : 'bg-coral'}`}>
+            {message.text}
+          </span>
+        )}
+      </div>
+    </>
   )
 }

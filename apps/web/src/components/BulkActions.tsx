@@ -56,44 +56,47 @@ export function BulkActions({
   }
 
   return (
-    <div className="panel flex flex-col gap-2 p-3">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-ink-muted">{ids.length} selected</span>
+    <div className="panel">
+      <div className="panel-head bg-accent">
+        <span className="flex items-center gap-2 font-mono text-xs font-bold text-ink">
+          <span className="chip">{ids.length}</span>
+          selected
+        </span>
         <button type="button" onClick={onClear} className="btn">
           clear
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-3 p-3">
         <button
           type="button"
           disabled={urls.length === 0}
-          className="btn"
+          className="btn bg-sky"
           onClick={openAll}
         >
           open {urls.length}
         </button>
 
-        <form onSubmit={submitTags} className="flex items-center gap-1">
+        <form onSubmit={submitTags} className="flex items-center gap-1.5">
           <input
             type="text"
             placeholder="tag1, tag2"
             value={tagInput}
             onChange={(event) => setTagInput(event.target.value)}
-            className="field w-36 px-2 py-1 font-mono text-xs"
+            className="field w-28 px-2 py-1 font-mono text-xs"
           />
           <button type="submit" disabled={bulkUpdate.isPending} className="btn">
             add tags
           </button>
         </form>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <input
             type="text"
             placeholder="tag1, tag2"
             value={removeInput}
             onChange={(event) => setRemoveInput(event.target.value)}
-            className="field w-36 px-2 py-1 font-mono text-xs"
+            className="field w-28 px-2 py-1 font-mono text-xs"
           />
           <button
             type="button"
@@ -110,7 +113,7 @@ export function BulkActions({
           </button>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <select
             value={collectionId}
             onChange={(event) => setCollectionId(event.target.value)}
@@ -139,17 +142,18 @@ export function BulkActions({
           </button>
         </div>
 
+        {/* Trash is reversible, so it stays a plain button; it sits apart at the end. */}
         <button
           type="button"
           disabled={bulkUpdate.isPending}
-          className="btn"
+          className="btn sm:ml-auto"
           onClick={() => run({ ids, status: 'trashed' })}
         >
           trash
         </button>
       </div>
 
-      {error && <p className="font-mono text-xs text-danger">{error}</p>}
+      {error && <p className="notice mx-3 mb-3 bg-coral">{error}</p>}
     </div>
   )
 }

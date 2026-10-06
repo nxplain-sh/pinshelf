@@ -60,7 +60,7 @@ pnpm build typecheck test
 - **Smallest diff that solves the problem.** Fix the root cause, not the symptom, and do not refactor neighbourhoods you were not asked to touch.
 - **Tests for non-trivial logic.** Pure logic that can silently break (URL handling, security guards, parsers) needs a Vitest case next to it in `packages/shared`. Behaviour that touches the database or the REST API belongs in `apps/web/test`, which runs against a real in-memory D1. Trivial one-liners do not need a test.
 - **Security at trust boundaries is not optional.** Validate input, guard outbound fetches, never log secrets. If a change touches auth or the metadata fetcher, say so explicitly in the pull request.
-- **UI changes follow the design system.** Tokens and component classes from `apps/web/src/styles/app.css`, dark only, no raw colours. See [docs/design.md](docs/design.md).
+- **UI changes follow the design system.** Tokens and component classes from `apps/web/src/styles/app.css`, light only, no raw colours. See [docs/design.md](docs/design.md).
 - **Conventional Commits.** `feat:`, `fix:`, `docs:`, `refactor:`, `chore:` with a scope when it helps, for example `fix(web): reject empty bookmark URLs`.
 - **No new dependencies for what a few lines can do.** If you do add one, explain in the pull request what it replaces. Install scripts must be allowlisted in `pnpm-workspace.yaml` (`allowBuilds`) before they run.
 

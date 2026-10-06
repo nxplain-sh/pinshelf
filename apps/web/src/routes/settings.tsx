@@ -1,9 +1,9 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import type { ChangeEvent, FormEvent, ReactNode } from 'react'
 import { authClient } from '~/lib/auth'
-import { SignOut } from '~/components/SignOut'
+import { AppHeader, PageHeading } from '~/components/AppHeader'
 import { TwoFactorSetup } from '~/components/TwoFactorSetup'
 import { exportJson, exportMarkdown, exportNetscape } from '~/lib/import-export'
 import { getAiSettings } from '~/lib/ai'
@@ -188,62 +188,54 @@ function SettingsPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-5 p-6">
-      <header className="flex items-center justify-between border-b border-line pb-4">
-        <Link
-          to="/"
-          className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
-        >
-          ← pinshelf
+    <main className="page">
+      <AppHeader />
+      <PageHeading title="settings" note="access, security, ai, and your data">
+        <Link to="/api-docs" className="btn bg-sky">
+          api reference
         </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            to="/api-docs"
-            className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
-          >
-            api reference
-          </Link>
-          <span className="font-mono text-xs text-ink-faint">settings</span>
-          <SignOut />
-        </div>
-      </header>
+      </PageHeading>
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">API tokens</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            for the extension and other clients
-          </p>
-        </div>
-
-        <form onSubmit={create} className="flex flex-wrap items-center gap-2">
-          <input
-            type="text"
-            required
-            placeholder="token name, e.g. chrome extension"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="field flex-1"
-          />
-          <select
-            value={expiresInDays ?? ''}
-            onChange={(event) =>
-              setExpiresInDays(event.target.value ? Number(event.target.value) : null)
-            }
-            aria-label="Token expiry"
-            className="field font-mono"
-          >
-            <option value="">never expires</option>
-            <option value="30">expires in 30 days</option>
-            <option value="90">expires in 90 days</option>
-            <option value="365">expires in a year</option>
-          </select>
-          <label className="flex items-center gap-2 font-mono text-xs text-ink-muted">
+      <Section
+        tone="bg-sky"
+        title="API tokens"
+        note="for the extension and other clients"
+        aside={tokens.length > 0 && <span className="chip">{tokens.length}</span>}
+      >
+        <form onSubmit={create} className="well flex flex-wrap items-end gap-3 p-3">
+          <label className="flex min-w-0 flex-[1_1_16rem] flex-col gap-1.5">
+            <span className="label">name</span>
+            <input
+              type="text"
+              required
+              placeholder="token name, e.g. chrome extension"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="field"
+            />
+          </label>
+          <label className="flex flex-[1_1_10rem] flex-col gap-1.5 sm:flex-none">
+            <span className="label">expiry</span>
+            <select
+              value={expiresInDays ?? ''}
+              onChange={(event) =>
+                setExpiresInDays(event.target.value ? Number(event.target.value) : null)
+              }
+              aria-label="Token expiry"
+              className="field font-mono"
+            >
+              <option value="">never expires</option>
+              <option value="30">expires in 30 days</option>
+              <option value="90">expires in 90 days</option>
+              <option value="365">expires in a year</option>
+            </select>
+          </label>
+          <label className="flex h-10 items-center gap-2 font-mono text-xs font-semibold text-ink-muted">
             <input
               type="checkbox"
               checked={readOnly}
               onChange={(event) => setReadOnly(event.target.checked)}
-              className="checkbox h-3.5 w-3.5"
+              className="checkbox"
             />
             read-only
           </label>
@@ -258,9 +250,12 @@ function SettingsPage() {
         {error && <p className="font-mono text-xs text-danger">{error}</p>}
 
         {issuedKey && (
-          <div className="panel flex flex-col gap-2 border-accent/40 p-3">
-            <span className="label">copy it now — it is shown once</span>
-            <code className="overflow-x-auto font-mono text-xs break-all text-accent">
+          <div className="notice flex flex-col gap-3 bg-accent p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="sticker bg-surface">shown once</span>
+              <span className="label text-ink">copy it now</span>
+            </div>
+            <code className="rounded-md border-2 border-line bg-surface px-3 py-2 font-mono text-xs font-semibold break-all text-ink">
               {issuedKey}
             </code>
             <div className="flex items-center gap-2">
@@ -282,18 +277,18 @@ function SettingsPage() {
         )}
 
         {tokens.length === 0 ? (
-          <p className="border border-dashed border-line py-6 text-center font-mono text-xs text-ink-faint">
-            no tokens yet
-          </p>
+          <p className="empty py-6">no tokens yet</p>
         ) : (
-          <ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col gap-2">
             {tokens.map((token) => (
               <li
                 key={token.id}
-                className="panel flex items-center justify-between gap-3 p-3"
+                className="tile flex items-center justify-between gap-3 p-3"
               >
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm">{token.name ?? 'unnamed'}</span>
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <span className="truncate text-sm font-semibold">
+                    {token.name ?? 'unnamed'}
+                  </span>
                   <span className="font-mono text-[11px] text-ink-faint">
                     {token.start ?? '•••'}… ·{' '}
                     {token.readOnly ? 'read-only' : 'read/write'} ·{' '}
@@ -308,7 +303,7 @@ function SettingsPage() {
                 </div>
                 <button
                   type="button"
-                  className="btn shrink-0"
+                  className="btn btn-danger shrink-0"
                   disabled={revokeApiToken.isPending}
                   onClick={() => revokeApiToken.mutate(token.id)}
                 >
@@ -318,18 +313,17 @@ function SettingsPage() {
             ))}
           </ul>
         )}
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Two-factor</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            {session.user.twoFactorEnabled
-              ? 'enabled — sign-in asks for a code'
-              : 'adds a TOTP code on top of your password'}
-          </p>
-        </div>
-
+      <Section
+        tone="bg-mint"
+        title="Two-factor"
+        note={
+          session.user.twoFactorEnabled
+            ? 'enabled — sign-in asks for a code'
+            : 'adds a TOTP code on top of your password'
+        }
+      >
         <TwoFactorSetup
           enabled={Boolean(session.user.twoFactorEnabled)}
           onMessage={(text, tone = 'info') => setTwoFactorMessage({ text, tone })}
@@ -350,31 +344,34 @@ function SettingsPage() {
             {twoFactorMessage.text}
           </p>
         )}
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <h2 className="text-sm font-medium">Sessions</h2>
-
-        <ul className="flex flex-col gap-1.5">
+      <Section
+        tone="bg-accent"
+        title="Sessions"
+        aside={sessions.length > 0 && <span className="chip">{sessions.length}</span>}
+      >
+        <ul className="flex flex-col gap-2">
           {sessions.map((item) => (
             <li
               key={item.id}
-              className="panel flex items-center justify-between gap-3 p-3"
+              className="tile flex items-center justify-between gap-3 p-3"
             >
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate font-mono text-xs text-ink-muted">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="truncate text-sm font-semibold">
                   {item.userAgent ?? 'unknown device'}
                 </span>
                 <span className="font-mono text-[11px] text-ink-faint">
                   {item.ipAddress ?? 'no address'} · started{' '}
                   {new Date(item.createdAt).toLocaleString()}
-                  {item.id === session.session.id ? ' · this device' : ''}
                 </span>
               </div>
-              {item.id !== session.session.id && (
+              {item.id === session.session.id ? (
+                <span className="chip shrink-0 bg-accent">this device</span>
+              ) : (
                 <button
                   type="button"
-                  className="btn shrink-0"
+                  className="btn btn-danger shrink-0"
                   onClick={async () => {
                     const result = await authClient.revokeSession({ token: item.token })
                     setSessionMessage(
@@ -389,39 +386,41 @@ function SettingsPage() {
           ))}
         </ul>
 
-        {sessions.length > 1 && (
-          <button
-            type="button"
-            className="btn self-start"
-            onClick={async () => {
-              const result = await authClient.revokeOtherSessions()
-              setSessionMessage(
-                result.error ? 'could not revoke' : 'signed out other devices',
-              )
-            }}
-          >
-            sign out other devices
-          </button>
+        {(sessions.length > 1 || sessionMessage) && (
+          <div className="flex flex-wrap items-center gap-3">
+            {sessions.length > 1 && (
+              <button
+                type="button"
+                className="btn"
+                onClick={async () => {
+                  const result = await authClient.revokeOtherSessions()
+                  setSessionMessage(
+                    result.error ? 'could not revoke' : 'signed out other devices',
+                  )
+                }}
+              >
+                sign out other devices
+              </button>
+            )}
+            {sessionMessage && (
+              <p className="font-mono text-xs text-ink-muted">{sessionMessage}</p>
+            )}
+          </div>
         )}
+      </Section>
 
-        {sessionMessage && (
-          <p className="font-mono text-xs text-ink-muted">{sessionMessage}</p>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">AI</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            {aiSettings.hasApiKey && aiSettings.model && aiSettings.baseUrl
-              ? `configured: ${aiSettings.model} at ${aiSettings.baseUrl}`
-              : 'openai-compatible endpoint · used by the toolbox · key stays in your database'}
-          </p>
-        </div>
-
-        <form onSubmit={saveAi} className="flex flex-col gap-2">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <label className="flex flex-col gap-1">
+      <Section
+        tone="bg-lilac"
+        title="AI"
+        note={
+          aiSettings.hasApiKey && aiSettings.model && aiSettings.baseUrl
+            ? `configured: ${aiSettings.model} at ${aiSettings.baseUrl}`
+            : 'openai-compatible endpoint · used by the toolbox · key stays in your database'
+        }
+      >
+        <form onSubmit={saveAi} className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
               <span className="label">base url</span>
               <input
                 type="url"
@@ -432,7 +431,7 @@ function SettingsPage() {
                 className="field font-mono text-xs"
               />
             </label>
-            <label className="flex flex-col gap-1">
+            <label className="flex flex-col gap-1.5">
               <span className="label">model</span>
               <input
                 type="text"
@@ -444,7 +443,7 @@ function SettingsPage() {
               />
             </label>
           </div>
-          <label className="flex flex-col gap-1">
+          <label className="flex flex-col gap-1.5">
             <span className="label">api key</span>
             <input
               type="password"
@@ -459,7 +458,7 @@ function SettingsPage() {
             />
           </label>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-3">
             <button
               type="submit"
               className="btn-primary"
@@ -484,7 +483,7 @@ function SettingsPage() {
             {aiSettings.hasApiKey && (
               <button
                 type="button"
-                className="btn"
+                className="btn btn-danger"
                 disabled={clearAiKey.isPending}
                 onClick={() =>
                   clearAiKey.mutate(undefined, {
@@ -498,49 +497,49 @@ function SettingsPage() {
           </div>
 
           {aiError && <p className="font-mono text-xs text-danger">{aiError}</p>}
-          {aiMessage && <p className="font-mono text-xs text-accent">{aiMessage}</p>}
+          {aiMessage && <p className="font-mono text-xs text-ink-muted">{aiMessage}</p>}
         </form>
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Backups</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            daily at 03:00 UTC · restoring only adds bookmarks that are missing
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="label">keep</span>
-          <select
-            value={backupState.retention}
-            onChange={(event) => updateRetention.mutate(Number(event.target.value))}
-            aria-label="Backup retention"
-            className="field font-mono"
-          >
-            {[7, 30, 90, 365].map((days) => (
-              <option key={days} value={days}>
-                {days} snapshots
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <label className="flex items-center gap-2 font-mono text-xs text-ink-muted">
-          <input
-            type="checkbox"
-            checked={autoArchive}
-            disabled={saveAutoArchive.isPending}
-            onChange={(event) => saveAutoArchive.mutate(event.target.checked)}
-            className="checkbox h-3.5 w-3.5"
-          />
-          snapshot every new save
-        </label>
-
-        <div className="flex flex-wrap items-center gap-2">
+      <Section
+        tone="bg-mint"
+        title="Backups"
+        note="daily at 03:00 UTC · restoring only adds bookmarks that are missing"
+        aside={
+          backupState.backups.length > 0 && (
+            <span className="chip">{backupState.backups.length}</span>
+          )
+        }
+      >
+        <div className="well flex flex-wrap items-end gap-x-6 gap-y-3 p-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="label">keep</span>
+            <select
+              value={backupState.retention}
+              onChange={(event) => updateRetention.mutate(Number(event.target.value))}
+              aria-label="Backup retention"
+              className="field font-mono"
+            >
+              {[7, 30, 90, 365].map((days) => (
+                <option key={days} value={days}>
+                  {days} snapshots
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex h-10 items-center gap-2 font-mono text-xs font-semibold text-ink-muted">
+            <input
+              type="checkbox"
+              checked={autoArchive}
+              disabled={saveAutoArchive.isPending}
+              onChange={(event) => saveAutoArchive.mutate(event.target.checked)}
+              className="checkbox"
+            />
+            snapshot every new save
+          </label>
           <button
             type="button"
-            className="btn-primary"
+            className="btn-primary sm:ml-auto"
             disabled={backupNow.isPending}
             onClick={() =>
               backupNow.mutate(undefined, {
@@ -555,27 +554,29 @@ function SettingsPage() {
           >
             {backupNow.isPending ? 'writing…' : 'Back up now'}
           </button>
-          <span className="font-mono text-[11px] text-ink-faint">
-            {backupState.backups.length === 0
-              ? 'no backups yet'
-              : `${backupState.backups.length} backups · last ${new Date(
-                  backupState.backups[0].uploaded,
-                ).toLocaleString()}`}
-          </span>
         </div>
-        {backupMessage && (
-          <p className="font-mono text-xs text-accent">{backupMessage}</p>
-        )}
 
         {backupState.backups.length > 0 && (
-          <ul className="flex flex-col gap-1.5">
+          <p className="font-mono text-[11px] text-ink-faint">
+            {backupState.backups.length} backups · last{' '}
+            {new Date(backupState.backups[0].uploaded).toLocaleString()}
+          </p>
+        )}
+        {backupMessage && (
+          <p className="font-mono text-xs text-ink-muted">{backupMessage}</p>
+        )}
+
+        {backupState.backups.length === 0 ? (
+          <p className="empty py-6">no backups yet</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
             {backupState.backups.map((backup) => (
               <li
                 key={backup.key}
-                className="panel flex items-center justify-between gap-3 p-3"
+                className="tile flex flex-wrap items-center justify-between gap-3 p-3"
               >
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate font-mono text-xs">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <span className="truncate text-sm font-semibold">
                     {backup.key.split('/').pop()}
                   </span>
                   <span className="font-mono text-[11px] text-ink-faint">
@@ -583,10 +584,10 @@ function SettingsPage() {
                     {(backup.size / 1024).toFixed(1)} KB
                   </span>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center gap-2">
                   <button
                     type="button"
-                    className="btn"
+                    className="btn bg-mint"
                     disabled={restoreBackup.isPending}
                     onClick={() => {
                       if (
@@ -612,7 +613,7 @@ function SettingsPage() {
                   </button>
                   <button
                     type="button"
-                    className="btn"
+                    className="btn btn-danger"
                     disabled={removeBackup.isPending}
                     onClick={() => removeBackup.mutate(backup.key)}
                   >
@@ -623,52 +624,87 @@ function SettingsPage() {
             ))}
           </ul>
         )}
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium">Import / export</h2>
-          <p className="font-mono text-[11px] text-ink-faint">
-            html · csv · enex · txt · json · netscape html · markdown · folders become
-            collections
-          </p>
+      <Section
+        tone="bg-sky"
+        title="Import / export"
+        note="html · csv · enex · txt · json · netscape html · markdown · folders become collections"
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-1.5">
+              <span className="label">import a file</span>
+              <input
+                type="file"
+                accept=".html,.htm,.csv,.enex,.txt,text/html,text/csv,text/plain"
+                onChange={importFile}
+                disabled={importBookmarks.isPending}
+                className="w-full min-w-0 font-mono text-xs text-ink-muted file:mr-3 file:cursor-pointer file:rounded-md file:border-2 file:border-line file:bg-surface file:px-2.5 file:py-1 file:font-mono file:text-xs file:font-semibold file:text-ink file:shadow-hard-xs"
+              />
+            </label>
+            {importBookmarks.isPending && (
+              <span className="font-mono text-xs text-ink-faint">importing…</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="label">export</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="btn"
+                onClick={() => void download(exportJson)}
+              >
+                download json
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => void download(exportNetscape)}
+              >
+                download html
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => void download(exportMarkdown)}
+              >
+                download markdown
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="file"
-            accept=".html,.htm,.csv,.enex,.txt,text/html,text/csv,text/plain"
-            onChange={importFile}
-            disabled={importBookmarks.isPending}
-            className="font-mono text-xs text-ink-muted file:mr-2 file:rounded-md file:border file:border-line file:bg-transparent file:px-2.5 file:py-1 file:font-mono file:text-xs file:text-ink-muted"
-          />
-          {importBookmarks.isPending && (
-            <span className="font-mono text-xs text-ink-faint">importing…</span>
-          )}
-        </div>
-        {importSummary && (
-          <p className="font-mono text-xs text-accent">{importSummary}</p>
-        )}
+        {importSummary && <p className="font-mono text-xs text-ok">{importSummary}</p>}
         {importError && <p className="font-mono text-xs text-danger">{importError}</p>}
-        <div className="flex items-center gap-2">
-          <button type="button" className="btn" onClick={() => void download(exportJson)}>
-            download json
-          </button>{' '}
-          <button
-            type="button"
-            className="btn"
-            onClick={() => void download(exportNetscape)}
-          >
-            download html
-          </button>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => void download(exportMarkdown)}
-          >
-            download markdown
-          </button>
-        </div>
-      </section>
+      </Section>
     </main>
+  )
+}
+
+/** A settings section: a panel with a toned head (title, note, aside) over a padded body. */
+function Section({
+  tone,
+  title,
+  note,
+  aside,
+  children,
+}: {
+  tone: string
+  title: string
+  note?: ReactNode
+  aside?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <section className="panel">
+      <div className={`panel-head ${tone}`}>
+        <h2 className="section-title">{title}</h2>
+        {aside}
+        {note && (
+          <p className="basis-full text-sm text-ink-muted wrap-anywhere">{note}</p>
+        )}
+      </div>
+      <div className="flex flex-col gap-3 p-4">{children}</div>
+    </section>
   )
 }

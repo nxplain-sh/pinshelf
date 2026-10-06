@@ -26,6 +26,19 @@ function isTyping(target: EventTarget | null): boolean {
   )
 }
 
+// 'cmd/ctrl + k' → [cmd/ctrl] + [k]: a spaced joiner separates two keys.
+function KeyCombo({ keys }: { keys: string }) {
+  const match = keys.match(/^(.+) ([+/]) (.+)$/)
+  if (!match) return <kbd className="kbd">{keys}</kbd>
+  return (
+    <>
+      <kbd className="kbd">{match[1]}</kbd>
+      <span>{match[2]}</span>
+      <kbd className="kbd">{match[3]}</kbd>
+    </>
+  )
+}
+
 function hostFor(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '')
@@ -105,27 +118,36 @@ export function CommandPalette() {
   if (!open && !help) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-canvas/80 p-4 pt-[12vh]">
+    <div className="overlay flex items-start justify-center p-4 pt-[12vh]">
       <div
         role="dialog"
         aria-modal="true"
         aria-label={open ? 'command palette' : 'keyboard shortcuts'}
-        className="w-full max-w-lg rounded-lg border border-line bg-surface"
+        className="dialog w-full max-w-lg overflow-hidden"
       >
         {help ? (
-          <div className="flex flex-col gap-2 p-4">
-            <h2 className="font-mono text-[11px] tracking-wide text-ink-faint uppercase">
-              keyboard shortcuts
-            </h2>
-            {SHORTCUTS.map(([keys, description]) => (
-              <div key={keys} className="flex items-baseline justify-between gap-4">
-                <span className="font-mono text-xs text-ink">{keys}</span>
-                <span className="font-mono text-[11px] text-ink-muted">
-                  {description}
-                </span>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="panel-head rounded-t-none bg-sky py-3">
+              <h2 className="text-xl leading-none font-bold tracking-tight">
+                keyboard shortcuts
+              </h2>
+            </div>
+            <ul className="flex flex-col px-4 py-2">
+              {SHORTCUTS.map(([keys, description]) => (
+                <li
+                  key={keys}
+                  className="flex items-center justify-between gap-4 border-b-2 border-line-soft py-2.5 last:border-0"
+                >
+                  <span className="flex items-center gap-1.5 font-mono text-[11px] text-ink-faint">
+                    <KeyCombo keys={keys} />
+                  </span>
+                  <span className="text-right font-mono text-xs text-ink-muted">
+                    {description}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <>
             <input
@@ -138,11 +160,13 @@ export function CommandPalette() {
               onKeyDown={onInputKey}
               placeholder="search bookmarks…"
               aria-label="search bookmarks"
-              className="field w-full rounded-b-none border-0 border-b border-line font-mono"
+              // The dialog is already the focused surface: no hard shadow here,
+              // the thicker bottom rule is the focus cue instead.
+              className="field w-full rounded-none border-0 border-b-2 bg-surface px-5 py-4 font-mono text-base focus:border-b-4 focus:pb-3.5 focus:shadow-none"
             />
-            <ul className="max-h-80 overflow-y-auto p-2">
+            <ul className="flex max-h-80 flex-col gap-1 overflow-y-auto p-2">
               {items.length === 0 && (
-                <li className="px-2 py-3 font-mono text-xs text-ink-faint">
+                <li className="px-3 py-3 font-mono text-xs text-ink-faint">
                   {results.isFetching ? 'searching…' : 'no matches'}
                 </li>
               )}
@@ -152,22 +176,36 @@ export function CommandPalette() {
                     type="button"
                     onMouseEnter={() => setIndex(position)}
                     onClick={() => openBookmark(item.id)}
-                    className={`flex w-full flex-col items-start gap-0.5 rounded-md border px-3 py-2 text-left ${
-                      position === index ? 'border-accent' : 'border-transparent'
+                    className={`flex w-full flex-col items-start gap-0.5 rounded-md border-2 px-3 py-2 text-left ${
+                      position === index
+                        ? 'border-line bg-accent shadow-hard-xs'
+                        : 'border-transparent'
                     }`}
                   >
-                    <span className="text-sm text-ink">
+                    <span className="w-full truncate text-sm font-semibold text-ink">
                       {item.title ?? hostFor(item.url)}
                     </span>
-                    <span className="font-mono text-[11px] text-ink-faint">
+                    <span
+                      className={`font-mono text-[11px] ${
+                        position === index ? 'text-ink-muted' : 'text-ink-faint'
+                      }`}
+                    >
                       {hostFor(item.url)}
                     </span>
                   </button>
                 </li>
               ))}
             </ul>
-            <p className="border-t border-line px-4 py-2 font-mono text-[11px] text-ink-faint">
-              enter opens · esc closes · ? for all shortcuts
+            <p className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t-2 border-line bg-surface-hover px-4 py-2.5 font-mono text-[11px] text-ink-muted">
+              <span className="flex items-center gap-1.5">
+                <kbd className="kbd">enter</kbd> opens
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="kbd">esc</kbd> closes
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="kbd">?</kbd> for all shortcuts
+              </span>
             </p>
           </>
         )}
