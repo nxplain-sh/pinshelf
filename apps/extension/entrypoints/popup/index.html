@@ -5,18 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pinshelf</title>
     <style>
+      /*
+       * Hand mirror of apps/web/src/styles/app.css: the @theme tokens as literal
+       * hex, and the component classes the popup uses. Change both together.
+       * The fonts are the web app's own files; Vite bundles them into the
+       * extension, so the popup never makes a font request over the network.
+       */
+      @font-face {
+        font-family: 'Space Grotesk';
+        font-style: normal;
+        font-display: swap;
+        font-weight: 300 700;
+        src: url('../../../web/src/styles/fonts/space-grotesk-latin-wght-normal.woff2')
+          format('woff2');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-display: swap;
+        font-weight: 100 800;
+        src: url('../../../web/src/styles/fonts/jetbrains-mono-latin-wght-normal.woff2')
+          format('woff2');
+      }
       :root {
-        color-scheme: dark;
-        --canvas: #131110;
-        --surface: #1a1715;
-        --surface-hover: #221e1b;
-        --line: #2e2925;
-        --line-strong: #4a423a;
-        --ink: #f2ece2;
-        --ink-muted: #b3a99b;
-        --ink-faint: #837a6d;
-        --accent: #c9a227;
-        --danger: #d2604f;
+        color-scheme: light;
+        --canvas: #f4eee1;
+        --surface: #fffcf5;
+        --surface-hover: #ece4d4;
+        --line: #131110;
+        --line-soft: #d8cebb;
+        --ink: #131110;
+        --ink-muted: #463e36;
+        --ink-faint: #6b6155;
+        --accent: #fcc93a;
+        --accent-ink: #7a5800;
+        --pink: #ffa3c8;
+        --sky: #92d2ff;
+        --mint: #9be8b4;
+        --lilac: #c8b6ff;
+        --coral: #ff8f7d;
+        --ok: #17703a;
+        --warn: #a84b06;
+        --danger: #b8271b;
+        --font-sans:
+          'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono:
+          'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+        --radius-md: 6px;
+        --radius-lg: 10px;
+        /* Hard offset shadows: no blur, no spread, always the line colour. */
+        --shadow-hard-xs: 2px 2px 0 0 var(--line);
+        --shadow-hard-sm: 3px 3px 0 0 var(--line);
+        --shadow-hard: 4px 4px 0 0 var(--line);
+        --shadow-hard-lg: 6px 6px 0 0 var(--line);
       }
       * {
         box-sizing: border-box;
@@ -24,13 +65,24 @@
       body {
         margin: 0;
         width: 340px;
-        background: var(--canvas);
+        background-color: var(--canvas);
+        /* The app's dot grid. */
+        background-image: radial-gradient(
+          color-mix(in srgb, var(--ink) 13%, transparent) 1px,
+          transparent 1.4px
+        );
+        background-size: 22px 22px;
         color: var(--ink);
-        font:
-          13px/1.5 ui-sans-serif,
-          system-ui,
-          -apple-system,
-          sans-serif;
+        font: 14px/1.5 var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection {
+        background: var(--accent);
+        color: var(--ink);
+      }
+      :focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 3px;
       }
       input,
       select,
@@ -38,146 +90,295 @@
       button {
         font: inherit;
       }
-      .wrap {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 12px;
-      }
+
+      /* Layout */
       .head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 8px;
+        gap: 12px;
+        border-bottom: 2px solid var(--line);
+        background: var(--surface);
+        padding: 10px 14px;
       }
       .brand {
         display: flex;
         align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 17px;
+        font-weight: 500;
+        letter-spacing: -0.055em;
+        line-height: 1;
+      }
+      /*
+       * Steel on paper is under 2:1, so the mark sits on an ink plate exactly
+       * like the favicon and Logo.tsx: corner radius 26/120, mark at 78%.
+       */
+      .plate {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: calc(26px * 26 / 120);
+        background: var(--ink);
+      }
+      .plate img {
+        display: block;
+        width: 78%;
+        height: 78%;
+      }
+      .wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 14px;
+      }
+      .group {
+        display: flex;
+        flex-direction: column;
         gap: 6px;
-        font-weight: 600;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .row-fill > * {
+        flex: 1 1 auto;
+      }
+
+      /* The tab being saved */
+      .current {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+        border: 2px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-hard);
+        padding: 10px 12px;
+      }
+      .title {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        font-size: 15px;
+        font-weight: 700;
         letter-spacing: -0.01em;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+      }
+      .url {
+        overflow: hidden;
+        color: var(--ink-faint);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .muted {
         color: var(--ink-faint);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-family: var(--font-mono);
         font-size: 11px;
+        overflow-wrap: anywhere;
       }
-      .title {
-        font-size: 13px;
-        font-weight: 500;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .url {
-        color: var(--ink-faint);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      /* Component classes, as in app.css */
+      .label {
+        color: var(--ink-muted);
+        font-family: var(--font-mono);
         font-size: 11px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        line-height: 16px;
+        text-transform: uppercase;
       }
       .field {
         width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 6px;
+        border: 2px solid var(--line);
+        border-radius: var(--radius-md);
         background: var(--surface);
         color: var(--ink);
-        padding: 6px 8px;
-        font-size: 12px;
-      }
-      .field:focus {
-        outline: none;
-        border-color: var(--line-strong);
+        padding: 8px 12px;
+        font-size: 14px;
+        line-height: 20px;
+        transition: box-shadow 100ms;
       }
       .field::placeholder {
         color: var(--ink-faint);
       }
-      .row {
-        display: flex;
+      /* The hard shadow is the focus indicator; the outline would double it. */
+      .field:focus {
+        outline: none;
+        box-shadow: var(--shadow-hard-sm);
+      }
+      /*
+       * Buttons sit on a hard shadow. Hover lifts them off it, press drives them
+       * into it; the far edge of the shadow never moves, so nothing jitters.
+       */
+      .btn,
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--line);
+        border-radius: var(--radius-md);
+        color: var(--ink);
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+        transition:
+          translate 100ms ease-out,
+          box-shadow 100ms ease-out,
+          background-color 100ms ease-out;
+      }
+      .btn {
         gap: 6px;
+        background: var(--surface);
+        padding: 4px 10px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        box-shadow: var(--shadow-hard-xs);
+      }
+      .btn-primary {
+        gap: 8px;
+        background: var(--accent);
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        box-shadow: var(--shadow-hard);
+      }
+      .btn:disabled,
+      .btn-primary:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      @media (hover: hover) {
+        .btn:not(:disabled):hover {
+          translate: -1px -1px;
+          box-shadow: var(--shadow-hard-sm);
+        }
+        .btn-primary:not(:disabled):hover {
+          translate: -2px -2px;
+          box-shadow: var(--shadow-hard-lg);
+        }
+      }
+      .btn:not(:disabled):active {
+        translate: 2px 2px;
+        box-shadow: none;
+      }
+      .btn-primary:not(:disabled):active {
+        translate: 4px 4px;
+        box-shadow: none;
+      }
+      .btn-wide {
+        width: 100%;
       }
       .check {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         color: var(--ink-muted);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 11px;
-      }
-      .btn {
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: transparent;
-        color: var(--ink-muted);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 11px;
-        padding: 4px 8px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
         cursor: pointer;
       }
-      .btn:hover {
-        border-color: var(--line-strong);
-        color: var(--ink);
+      .checkbox {
+        display: inline-grid;
+        flex-shrink: 0;
+        place-content: center;
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        border: 2px solid var(--line);
+        border-radius: 4px;
+        background: var(--surface);
+        cursor: pointer;
+        appearance: none;
+        transition: background-color 150ms;
       }
-      .btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
-      .btn-primary {
-        border: 0;
-        border-radius: 6px;
+      .checkbox::before {
+        content: '';
+        width: 8px;
+        height: 8px;
         background: var(--ink);
-        color: var(--canvas);
+        clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        scale: 0;
+        transition: scale 75ms;
+      }
+      .checkbox:checked {
+        background: var(--accent);
+      }
+      .checkbox:checked::before {
+        scale: 1;
+      }
+      /* A message that must be seen; give it a tone class. */
+      .notice {
+        border: 2px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        color: var(--ink);
+        padding: 8px 12px;
+        font-family: var(--font-mono);
+        font-size: 12px;
         font-weight: 500;
-        font-size: 13px;
-        padding: 7px 14px;
-        cursor: pointer;
+        line-height: 16px;
+        box-shadow: var(--shadow-hard-xs);
+        overflow-wrap: anywhere;
       }
-      .btn-primary:disabled {
-        opacity: 0.4;
-      }
-      .label {
-        color: var(--ink-faint);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 11px;
-        text-transform: uppercase;
-      }
+
+      /* The model's summary: a panel with a lilac head, since lilac means AI. */
       .answer {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        max-height: 160px;
-        overflow-y: auto;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        padding: 8px;
+        overflow: hidden;
+        border: 2px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-hard);
+      }
+      .answer-head {
+        border-bottom: 2px solid var(--line);
+        padding: 6px 12px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 16px;
       }
       .answer p {
+        max-height: 160px;
+        overflow-y: auto;
         margin: 0;
-        font-size: 12px;
-        line-height: 1.5;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.55;
         white-space: pre-line;
       }
-      .message-ok {
-        color: var(--accent);
+
+      /* Tone fills, named like the Tailwind utilities. Text on them stays ink. */
+      .bg-accent {
+        background-color: var(--accent);
       }
-      .message-error {
-        color: var(--danger);
+      .bg-sky {
+        background-color: var(--sky);
       }
-      .link {
-        background: none;
-        border: 0;
-        color: var(--ink-muted);
-        cursor: pointer;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 11px;
-        padding: 0;
-        text-decoration: underline;
-        text-underline-offset: 3px;
+      .bg-mint {
+        background-color: var(--mint);
       }
-      .link:hover {
-        color: var(--ink);
+      .bg-lilac {
+        background-color: var(--lilac);
+      }
+      .bg-coral {
+        background-color: var(--coral);
       }
     </style>
   </head>

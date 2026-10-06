@@ -5,6 +5,11 @@ import { apiBaseUrl, savedPageIndicator } from '../utils/settings'
 const MENU_ID = 'pinshelf-save'
 const HIGHLIGHT_ID = 'pinshelf-highlight'
 const FLASH_MS = 3000
+// Badge colours mirror app.css: accent fill for saved, coral for failed, ink
+// text on both (the browser's default white is unreadable on either fill).
+const BADGE_OK = '#fcc93a'
+const BADGE_FAIL = '#ff8f7d'
+const BADGE_TEXT = '#131110'
 
 export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(() => {
@@ -33,7 +38,7 @@ export default defineBackground(() => {
     if (!url) return
 
     const result = await saveBookmark({ url })
-    await flashBadge(result.ok ? '✓' : '!', result.ok ? '#c9a227' : '#d2604f', tab?.id)
+    await flashBadge(result.ok ? '✓' : '!', result.ok ? BADGE_OK : BADGE_FAIL, tab?.id)
   })
 
   // Saved-page indicator: mark tabs whose url is already in the library.
@@ -70,6 +75,10 @@ export default defineBackground(() => {
     if (!term) return
     await browser.tabs.create({ url: await instanceUrl(term) })
   })
+
+  // Older browsers lack this call; it runs last and guarded so a failure here
+  // never skips the listeners above.
+  void browser.action?.setBadgeTextColor?.({ color: BADGE_TEXT })
 })
 
 /** Highlights hang off a bookmark, so save the page first when it is new. */
@@ -81,16 +90,16 @@ async function saveHighlight(url: string, quote: string, tabId?: number) {
     const saved = await saveBookmark({ url })
     bookmarkId = saved.ok ? saved.data.bookmark.id : undefined
     if (saved.ok && !saved.data.duplicate) {
-      await flashBadge('✓', '#c9a227', tabId)
+      await flashBadge('✓', BADGE_OK, tabId)
     }
   }
   if (!bookmarkId) {
-    await flashBadge('!', '#d2604f', tabId)
+    await flashBadge('!', BADGE_FAIL, tabId)
     return
   }
 
   const result = await createHighlight({ bookmarkId, quote })
-  await flashBadge(result.ok ? '✓' : '!', result.ok ? '#c9a227' : '#d2604f', tabId)
+  await flashBadge(result.ok ? '✓' : '!', result.ok ? BADGE_OK : BADGE_FAIL, tabId)
 }
 
 async function refreshBadge(tabId: number, url: string | undefined) {
@@ -107,7 +116,7 @@ async function refreshBadge(tabId: number, url: string | undefined) {
     text: result.ok && result.data.bookmarks.length > 0 ? '✓' : '',
   })
   if (result.ok && result.data.bookmarks.length > 0) {
-    await browser.action.setBadgeBackgroundColor({ tabId, color: '#c9a227' })
+    await browser.action.setBadgeBackgroundColor({ tabId, color: BADGE_OK })
   }
 }
 
