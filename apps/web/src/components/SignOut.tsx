@@ -22,14 +22,14 @@ export function SignOut() {
 
   return (
     <span className="flex items-center gap-2">
-      <button
-        type="button"
-        className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
-        onClick={run}
-      >
+      <button type="button" className="nav-link" onClick={run}>
         sign out
       </button>
-      {failed && <span className="font-mono text-xs text-danger">failed — retry</span>}
+      {failed && (
+        <span className="font-mono text-xs font-semibold text-danger">
+          failed — retry
+        </span>
+      )}
     </span>
   )
 }

@@ -1,43 +1,87 @@
 @import 'tailwindcss' source('../');
 
-@theme {
-  --color-canvas: #131110;
-  --color-surface: #1a1715;
-  --color-surface-hover: #221e1b;
-  --color-line: #2e2925;
-  --color-line-strong: #4a423a;
-  --color-ink: #f2ece2;
-  --color-ink-muted: #b3a99b;
-  --color-ink-faint: #837a6d;
-  --color-accent: #c9a227;
-  --color-steel: #b9bec6;
-  --color-warn: #e58a3a;
-  --color-danger: #d2604f;
+/*
+ * Self-hosted, latin subset only, both OFL (licences sit next to the files).
+ * Vite hashes them into /assets/, which the service worker already caches.
+ */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('./fonts/space-grotesk-latin-wght-normal.woff2') format('woff2');
+}
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('./fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+}
+
+@theme {
+  --color-canvas: #f4eee1;
+  --color-surface: #fffcf5;
+  --color-surface-hover: #ece4d4;
+  --color-line: #131110;
+  --color-line-soft: #d8cebb;
+  --color-ink: #131110;
+  --color-ink-muted: #463e36;
+  --color-ink-faint: #6b6155;
+  --color-accent: #fcc93a;
+  --color-accent-ink: #7a5800;
+  --color-pink: #ffa3c8;
+  --color-sky: #92d2ff;
+  --color-mint: #9be8b4;
+  --color-lilac: #c8b6ff;
+  --color-coral: #ff8f7d;
+  --color-ok: #17703a;
+  --color-warn: #a84b06;
+  --color-danger: #b8271b;
+  --color-brass: #c9a227;
+  --color-steel: #b9bec6;
+
+  --font-sans:
+    'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
 
   --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+
+  /* Hard offset shadows: no blur, no spread, always the line colour. */
+  --shadow-hard-xs: 2px 2px 0 0 var(--color-line);
+  --shadow-hard-sm: 3px 3px 0 0 var(--color-line);
+  --shadow-hard: 4px 4px 0 0 var(--color-line);
+  --shadow-hard-lg: 6px 6px 0 0 var(--color-line);
+  --shadow-hard-xl: 8px 8px 0 0 var(--color-line);
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    @apply bg-canvas text-ink font-sans antialiased;
+    @apply bg-canvas font-sans text-ink antialiased;
+    /* Dot grid: the shelf's pegboard. Tinted ink, so it follows the palette. */
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--color-ink) 13%, transparent) 1px,
+      transparent 1.4px
+    );
+    background-size: 22px 22px;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 32%, transparent);
+    background: var(--color-accent);
     color: var(--color-ink);
   }
 
   :focus-visible {
-    outline: 1px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
   }
 
   input,
@@ -49,31 +93,169 @@
 }
 
 @layer components {
-  .label {
-    @apply font-mono text-[11px] tracking-wide text-ink-faint uppercase;
+  /* Page frame: every signed-in view uses it, so the header never jumps. */
+  .page {
+    @apply mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 px-4 pt-4 pb-24 sm:px-6;
   }
 
+  .page-title {
+    @apply text-3xl leading-none font-bold tracking-tight text-ink sm:text-4xl;
+  }
+
+  .section-title {
+    @apply text-lg leading-tight font-bold tracking-tight text-ink;
+  }
+
+  .label {
+    @apply font-mono text-[11px] font-bold tracking-wider text-ink-muted uppercase;
+  }
+
+  /*
+   * Buttons sit on a hard shadow. Hover lifts them off it, press drives them
+   * into it; the far edge of the shadow never moves, so nothing jitters.
+   */
   .btn {
-    @apply rounded-md border border-line px-2.5 py-1 font-mono text-xs text-ink-muted transition-colors hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md border-2 border-line bg-surface px-2.5 py-1 font-mono text-xs font-semibold whitespace-nowrap text-ink shadow-hard-xs transition-[translate,box-shadow,background-color] duration-100 ease-out select-none;
   }
 
   .btn-primary {
-    @apply rounded-md bg-ink px-4 py-2 text-sm font-medium text-canvas transition-opacity hover:opacity-90 disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-2 rounded-md border-2 border-line bg-accent px-4 py-2 text-sm font-bold whitespace-nowrap text-ink shadow-hard transition-[translate,box-shadow,background-color] duration-100 ease-out select-none;
+  }
+
+  /* Modifier for .btn on actions that cannot be undone: `btn btn-danger`. */
+  .btn-danger {
+    @apply bg-coral;
+  }
+
+  .btn:disabled,
+  .btn-primary:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  @media (hover: hover) {
+    .btn:not(:disabled):hover {
+      @apply -translate-px shadow-hard-sm;
+    }
+
+    .btn-primary:not(:disabled):hover {
+      @apply -translate-0.5 shadow-hard-lg;
+    }
+  }
+
+  .btn:not(:disabled):active {
+    @apply translate-0.5 shadow-none;
+  }
+
+  .btn-primary:not(:disabled):active {
+    @apply translate-1 shadow-none;
   }
 
   .field {
-    @apply rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink transition-colors placeholder:text-ink-faint focus:border-line-strong focus:outline-none;
+    @apply rounded-md border-2 border-line bg-surface px-3 py-2 text-sm text-ink transition-shadow duration-100 placeholder:text-ink-faint;
+  }
+
+  /* The hard shadow is the focus indicator; the outline would double it. */
+  .field:focus {
+    @apply shadow-hard-sm outline-none;
+  }
+
+  .field:disabled {
+    @apply cursor-not-allowed bg-surface-hover;
   }
 
   .chip {
-    @apply rounded border border-line bg-surface-hover px-1.5 py-0.5 font-mono text-[11px] text-ink-muted;
+    @apply inline-flex items-center gap-1 rounded-full border-2 border-line bg-surface px-2 py-px font-mono text-[11px] leading-4 font-semibold whitespace-nowrap text-ink;
+  }
+
+  @media (hover: hover) {
+    a.chip:hover,
+    button.chip:not(:disabled):hover {
+      @apply -translate-px shadow-hard-xs;
+    }
+  }
+
+  a.chip,
+  button.chip {
+    @apply transition-[translate,box-shadow] duration-100;
   }
 
   .panel {
-    @apply rounded-lg border border-line bg-surface;
+    @apply rounded-lg border-2 border-line bg-surface shadow-hard;
+  }
+
+  /* Rows inside a section: same border, a lighter shadow so stacks stay calm. */
+  .tile {
+    @apply rounded-md border-2 border-line bg-surface shadow-hard-xs;
+  }
+
+  /* Coloured strip across the top of a panel; give it a bg-* tone. */
+  .panel-head {
+    @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-t-[calc(var(--radius-lg)-2px)] border-b-2 border-line px-4 py-2.5;
+  }
+
+  /* Inset area inside a panel: grouped controls, generated codes, an answer. */
+  .well {
+    @apply rounded-md border-2 border-line-soft bg-surface-hover;
+  }
+
+  /* A message that must be seen (offline, one-time secrets); give it a bg-* tone. */
+  .notice {
+    @apply rounded-md border-2 border-line bg-surface px-3 py-2 font-mono text-xs font-medium text-ink shadow-hard-xs;
+  }
+
+  .empty {
+    @apply rounded-lg border-2 border-dashed border-line bg-surface/70 px-4 py-10 text-center font-mono text-xs text-ink-muted;
+  }
+
+  .sticker {
+    @apply inline-flex -rotate-2 items-center gap-1 rounded-md border-2 border-line bg-accent px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide text-ink uppercase shadow-hard-xs;
+  }
+
+  .link {
+    @apply font-semibold text-ink underline decoration-accent decoration-2 underline-offset-4 transition-colors hover:decoration-ink;
+  }
+
+  .kbd {
+    @apply inline-flex min-w-6 items-center justify-center rounded-md border-2 border-line bg-surface px-1.5 py-px font-mono text-[11px] font-bold text-ink shadow-hard-xs;
+  }
+
+  .nav-link {
+    @apply rounded-md border-2 border-transparent px-2.5 py-1 font-mono text-xs font-bold text-ink-muted transition-colors hover:border-line hover:bg-surface hover:text-ink;
+  }
+
+  .nav-link[data-status='active'] {
+    @apply border-line bg-accent text-ink shadow-hard-xs;
+  }
+
+  .overlay {
+    @apply fixed inset-0 z-50 bg-ink/50;
+  }
+
+  .dialog {
+    @apply rounded-xl border-2 border-line bg-surface shadow-hard-xl;
   }
 
   .checkbox {
-    accent-color: var(--color-accent);
+    @apply inline-grid size-4 shrink-0 cursor-pointer appearance-none place-content-center rounded-[4px] border-2 border-line bg-surface transition-colors;
+  }
+
+  .checkbox::before {
+    content: '';
+    @apply size-2 scale-0 bg-ink transition-transform duration-75;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+
+  .checkbox:checked,
+  .checkbox:indeterminate {
+    @apply bg-accent;
+  }
+
+  .checkbox:checked::before {
+    @apply scale-100;
+  }
+
+  .checkbox:indeterminate::before {
+    @apply scale-100;
+    clip-path: inset(36% 0);
   }
 }
