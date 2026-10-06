@@ -59,5 +59,5 @@ Repo-specific notes for coding agents. `README.md` covers the product, stack, an
 ## Docs, design, brand
 
 - Architectural changes need an ADR: copy `docs/adr/0000-template.md`, fill it in, add the row to `docs/adr/README.md`. Never rewrite an accepted ADR; supersede it.
-- The UI is dark only. Use tokens and component classes from `apps/web/src/styles/app.css` as documented in `docs/design.md`; no raw colours.
+- The UI is light only and neobrutalist (ADR-0020). Use tokens and component classes from `apps/web/src/styles/app.css` as documented in `docs/design.md`; no raw colours or soft shadows. Signed-in pages are `<main className="page">` + `<AppHeader />` + `<PageHeading>`; text tokens never go on the pop fills except `ink`/`ink-muted`.
 - `make icons` rasterizes `docs/brand/` into PWA icons, extension icons, the social card, and the copies in `site/public/assets/`. The card is composed in `apps/web/scripts/generate-icons.mjs` from `logo-dark.svg` plus the `TAGLINE` constant there; change the tagline in that constant and rerun.

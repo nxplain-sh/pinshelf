@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- Nothing yet.
+- The interface is now light and neobrutalist: paper canvas, charcoal borders, hard offset shadows, flat pop colours, and self-hosted Space Grotesk and JetBrains Mono ([ADR-0020](docs/adr/0020-adopt-a-light-neobrutalist-interface.md)). The extension popup, public share page, API reference, and static site follow the same system.
+- Every signed-in page shares one header with the full navigation and sign out, instead of a back link per page.
+- Tags keep one colour everywhere they appear.
 
 ## [0.2.0] - 2026-09-21
 
