@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { renderSVG } from 'uqr'
 import { authClient } from '~/lib/auth'
 import { discardTwoFactorSetup } from '~/lib/library'
@@ -21,21 +22,28 @@ function formatRemaining(seconds: number): string {
 function Codes({
   codes,
   label = 'backup codes — each works once',
+  children,
 }: {
   codes: string[]
   label?: string
+  /** Extra actions, shown beside the copy button. */
+  children?: ReactNode
 }) {
   const [copied, setCopied] = useState(false)
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <span className="label">{label}</span>
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 well px-3 py-2.5 sm:grid-cols-3 lg:grid-cols-5">
+        {codes.map((code) => (
+          <li key={code} className="font-mono text-xs font-semibold text-ink">
+            {code}
+          </li>
+        ))}
+      </ul>
       <div className="flex flex-wrap items-center gap-2">
-        <code className="font-mono text-[11px] break-all text-ink-muted">
-          {codes.join(' · ')}
-        </code>
         <button
           type="button"
-          className="btn shrink-0"
+          className="btn"
           onClick={async () => {
             await navigator.clipboard.writeText(codes.join('\n')).catch(() => undefined)
             setCopied(true)
@@ -43,6 +51,7 @@ function Codes({
         >
           {copied ? 'copied' : 'copy codes'}
         </button>
+        {children}
       </div>
     </div>
   )
@@ -96,7 +105,8 @@ export function TwoFactorSetup({
       // Four modules of quiet zone, so a phone camera locks on reliably.
       border: 4,
       pixelSize: 4,
-      whiteColor: '#f2ece2',
+      // Mirrors the surface and ink tokens; uqr cannot read @theme.
+      whiteColor: '#fffcf5',
       blackColor: '#131110',
     })
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
@@ -157,54 +167,56 @@ export function TwoFactorSetup({
   if (enabled) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            type="password"
-            placeholder="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            aria-label="Password"
-            className="field font-mono"
-          />
-          <button
-            type="button"
-            className="btn"
-            disabled={!password || pending}
-            onClick={() => void regenerateCodes()}
-          >
-            {pending ? 'working…' : 'new backup codes'}
-          </button>
-          <button
-            type="button"
-            className="btn"
-            disabled={!password || pending}
-            onClick={async () => {
-              setPending(true)
-              const result = await authClient.twoFactor.disable({ password })
-              setPending(false)
-              setPassword('')
-              setFreshCodes(null)
-              onMessage(
-                result.error ? (result.error.message ?? 'failed') : 'two-factor is off',
-                result.error ? 'error' : 'info',
-              )
-              if (!result.error) onChanged()
-            }}
-          >
-            disable
-          </button>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex min-w-0 flex-[1_1_12rem] flex-col gap-1.5 sm:flex-none">
+            <span className="label">password</span>
+            <input
+              type="password"
+              placeholder="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              aria-label="Password"
+              className="field font-mono"
+            />
+          </label>
+          <div className="flex h-10 flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="btn"
+              disabled={!password || pending}
+              onClick={() => void regenerateCodes()}
+            >
+              {pending ? 'working…' : 'new backup codes'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={!password || pending}
+              onClick={async () => {
+                setPending(true)
+                const result = await authClient.twoFactor.disable({ password })
+                setPending(false)
+                setPassword('')
+                setFreshCodes(null)
+                onMessage(
+                  result.error ? (result.error.message ?? 'failed') : 'two-factor is off',
+                  result.error ? 'error' : 'info',
+                )
+                if (!result.error) onChanged()
+              }}
+            >
+              disable
+            </button>
+          </div>
         </div>
 
         {freshCodes && (
-          <div className="panel flex flex-col gap-2 p-3">
-            <Codes codes={freshCodes} label="new backup codes — save them now" />
-            <button
-              type="button"
-              className="btn self-start"
-              onClick={() => setFreshCodes(null)}
-            >
-              done
-            </button>
+          <div className="tile p-3">
+            <Codes codes={freshCodes} label="new backup codes — save them now">
+              <button type="button" className="btn" onClick={() => setFreshCodes(null)}>
+                done
+              </button>
+            </Codes>
           </div>
         )}
       </div>
@@ -214,15 +226,18 @@ export function TwoFactorSetup({
   if (!setup) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            type="password"
-            placeholder="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            aria-label="Password"
-            className="field font-mono"
-          />
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex min-w-0 flex-[1_1_12rem] flex-col gap-1.5 sm:flex-none">
+            <span className="label">password</span>
+            <input
+              type="password"
+              placeholder="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              aria-label="Password"
+              className="field font-mono"
+            />
+          </label>
           <button
             type="button"
             className="btn-primary"
@@ -232,7 +247,7 @@ export function TwoFactorSetup({
             {pending ? 'generating…' : 'generate QR code'}
           </button>
         </div>
-        <p className="font-mono text-[11px] text-ink-faint">
+        <p className="text-sm text-ink-muted">
           nothing changes until you scan the code and verify one from your authenticator
         </p>
       </div>
@@ -240,31 +255,43 @@ export function TwoFactorSetup({
   }
 
   return (
-    <div className="panel flex flex-col gap-3 p-3">
-      <div className="flex flex-wrap items-start gap-4">
-        <div className="shrink-0 rounded-md bg-ink p-2">
-          <img src={qrSrc} width={160} height={160} alt="TOTP QR code" />
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        {/* The QR keeps its own light ground; the surface frame matches it. */}
+        <div className="shrink-0 self-center rounded-lg border-2 border-line bg-surface p-1 shadow-hard sm:self-start">
+          <img src={qrSrc} width={168} height={168} alt="TOTP QR code" />
         </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <span className={expiring ? 'label text-warn' : 'label'}>
-            scan with your authenticator · expires in {formatRemaining(secondsLeft)}
-          </span>
-          <span className="label">can't scan? enter this instead</span>
-          <code className="overflow-x-auto font-mono text-[11px] break-all text-ink-muted">
-            {setup.totpURI}
-          </code>
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="label">scan with your authenticator</span>
+            <span
+              className={
+                expiring
+                  ? 'chip bg-accent tabular-nums'
+                  : 'chip tabular-nums text-ink-muted'
+              }
+            >
+              expires in {formatRemaining(secondsLeft)}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="label">can't scan? enter this instead</span>
+            <code className="well overflow-x-auto px-3 py-2 font-mono text-[11px] break-all text-ink-muted">
+              {setup.totpURI}
+            </code>
+          </div>
           <Codes codes={setup.backupCodes} />
         </div>
       </div>
 
       {confirming ? (
-        <div className="flex flex-col gap-2 rounded-md border border-line-strong p-3">
-          <p className="font-mono text-[11px] text-warn">
+        <div className="flex flex-col gap-3">
+          <p className="notice bg-accent leading-relaxed">
             Turning on two-factor means every sign-in needs a code from your
             authenticator. If you lose that device and these backup codes, you cannot sign
             in — there is no recovery account and no support desk. Save the codes first.
           </p>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               className="btn-primary"
@@ -284,39 +311,44 @@ export function TwoFactorSetup({
           </div>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="123456"
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            aria-label="Verification code"
-            className="field font-mono"
-          />
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={!code || pending}
-            onClick={() => setConfirming(true)}
-          >
-            verify and enable
-          </button>
-          <button
-            type="button"
-            className="btn"
-            disabled={pending}
-            onClick={() => {
-              setSetup(null)
-              setExpiresAt(null)
-              setConfirming(false)
-              void discardTwoFactorSetup().then(() =>
-                onMessage('pending code discarded — generate a new one'),
-              )
-            }}
-          >
-            discard
-          </button>
+        <div className="flex flex-wrap items-end gap-3 border-t-2 border-line-soft pt-4">
+          <label className="flex flex-col gap-1.5">
+            <span className="label">verification code</span>
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="123456"
+              value={code}
+              onChange={(event) => setCode(event.target.value)}
+              aria-label="Verification code"
+              className="field w-40 font-mono tracking-widest"
+            />
+          </label>
+          <div className="flex h-10 items-center gap-3">
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={!code || pending}
+              onClick={() => setConfirming(true)}
+            >
+              verify and enable
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={pending}
+              onClick={() => {
+                setSetup(null)
+                setExpiresAt(null)
+                setConfirming(false)
+                void discardTwoFactorSetup().then(() =>
+                  onMessage('pending code discarded — generate a new one'),
+                )
+              }}
+            >
+              discard
+            </button>
+          </div>
         </div>
       )}
     </div>

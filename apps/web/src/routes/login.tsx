@@ -47,72 +47,101 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(70%_45%_at_50%_0%,rgba(201,162,39,0.07),transparent)] p-6">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <h1 className="sr-only">pinshelf</h1>
-        <img
-          src="/social-card.png"
-          alt="pinshelf — pin it, shelf it, find it"
-          width={1200}
-          height={630}
-          className="w-full rounded-lg border border-line"
-        />
-        <div className="flex flex-col gap-1">
-          <p className="font-mono text-xs text-ink-faint">
-            {needsSetup
-              ? 'first run — create the owner account'
-              : 'sign in to your instance'}
-          </p>
+    <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:p-8">
+      <h1 className="sr-only">pinshelf</h1>
+      <div className="grid w-full max-w-sm items-center gap-10 md:max-w-5xl md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:gap-14">
+        {/* The poster: the social card pinned to the board, a little crooked on phones. */}
+        <div className="relative -rotate-1 md:rotate-0">
+          <div
+            aria-hidden
+            className="absolute inset-0 translate-x-2 translate-y-3 rotate-3 rounded-xl border-2 border-line bg-pink md:translate-x-4 md:translate-y-4"
+          />
+          <img
+            src="/social-card.png"
+            alt="pinshelf — pin it, shelf it, find it"
+            width={1200}
+            height={630}
+            className="relative w-full rounded-xl border-2 border-line bg-ink shadow-hard-xl"
+          />
+          <span className="sticker absolute -top-3 -right-2 rotate-3 normal-case">
+            v{version}
+          </span>
         </div>
 
-        <form onSubmit={submit} className="flex flex-col gap-2">
-          {needsSetup && (
-            <input
-              type="text"
-              required
-              placeholder="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="field"
-            />
-          )}
-          <input
-            type="email"
-            required
-            placeholder="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="field"
-          />
-          <input
-            type="password"
-            required
-            minLength={8}
-            placeholder="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="field"
-          />
+        <div className="flex flex-col gap-5">
+          <div className="panel flex flex-col gap-6 p-5 sm:p-7">
+            <div className="flex flex-col items-start gap-2">
+              {needsSetup && <span className="sticker">first run</span>}
+              <h2 className="page-title">
+                {needsSetup ? 'create the owner account' : 'sign in'}
+              </h2>
+              {!needsSetup && (
+                <p className="font-mono text-xs text-ink-muted">to your instance</p>
+              )}
+            </div>
 
-          {error && <p className="font-mono text-xs text-danger">{error}</p>}
+            <form onSubmit={submit} className="flex flex-col gap-4">
+              {needsSetup && (
+                <label className="flex flex-col gap-1.5">
+                  <span className="label">name</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="your name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="field"
+                  />
+                </label>
+              )}
+              <label className="flex flex-col gap-1.5">
+                <span className="label">email</span>
+                <input
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="field"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="label">password</span>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  placeholder={needsSetup ? '8+ characters' : undefined}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="field"
+                />
+              </label>
 
-          <button type="submit" disabled={pending} className="btn-primary mt-1">
-            {pending ? 'working…' : needsSetup ? 'Create account' : 'Sign in'}
-          </button>
-        </form>
+              {error && <p className="notice bg-coral">{error}</p>}
 
-        <p className="font-mono text-[11px] text-ink-faint">
-          self-hosted, MIT-licensed software ·{' '}
-          <a
-            href="https://github.com/nxplain-sh/pinshelf/blob/main/TERMS_OF_SERVICE.md"
-            target="_blank"
-            rel="noreferrer"
-            className="underline underline-offset-4 transition-colors hover:text-ink"
-          >
-            terms
-          </a>{' '}
-          · v{version}
-        </p>
+              <button
+                type="submit"
+                disabled={pending}
+                className="btn-primary mt-1 w-full py-3 text-base"
+              >
+                {pending ? 'working…' : needsSetup ? 'Create account' : 'Sign in'}
+              </button>
+            </form>
+          </div>
+
+          <p className="text-center font-mono text-[11px] text-ink-muted">
+            self-hosted, MIT-licensed software ·{' '}
+            <a
+              href="https://github.com/nxplain-sh/pinshelf/blob/main/TERMS_OF_SERVICE.md"
+              target="_blank"
+              rel="noreferrer"
+              className="link"
+            >
+              terms
+            </a>
+          </p>
+        </div>
       </div>
     </main>
   )

@@ -138,7 +138,7 @@ export function Toolbox() {
     <>
       <button
         type="button"
-        className="btn fixed right-5 bottom-5 z-40 border-accent/50 bg-surface text-accent"
+        className="btn fixed right-5 bottom-5 z-40 bg-lilac px-3 py-1.5"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
@@ -146,109 +146,111 @@ export function Toolbox() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        // A floating sheet rather than an edge-to-edge drawer, so it keeps the
+        // full border and hard shadow every other surface has.
+        <div className="overlay flex justify-end p-2 sm:p-3">
           <button
             type="button"
             aria-label="close toolbox"
-            className="absolute inset-0 cursor-default bg-canvas/70"
+            className="absolute inset-0 cursor-default"
             onClick={() => setOpen(false)}
           />
           <section
             role="dialog"
             aria-modal="true"
             aria-label="toolbox"
-            className="relative flex h-full w-full max-w-md flex-col border-l border-line bg-surface"
+            className="dialog relative flex w-full max-w-md flex-col overflow-hidden"
           >
-            <header className="flex items-center justify-between border-b border-line px-5 py-3">
-              <h2 className="font-mono text-xs text-ink-muted">toolbox</h2>
-              <button
-                type="button"
-                className="font-mono text-xs text-ink-muted hover:text-ink"
-                onClick={() => setOpen(false)}
-              >
+            <header className="panel-head rounded-t-none bg-lilac py-3">
+              <h2 className="text-xl leading-none font-bold tracking-tight">toolbox</h2>
+              <button type="button" className="btn" onClick={() => setOpen(false)}>
                 close
               </button>
             </header>
 
-            <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
+            <div className="flex flex-1 flex-col gap-5 overflow-y-auto bg-canvas p-4 sm:p-5">
               {aiSettingsQuery.isPending ? (
-                <p className="font-mono text-xs text-ink-faint">loading…</p>
+                <p className="font-mono text-xs text-ink-muted">loading…</p>
               ) : configured && aiSettings ? (
-                <>
-                  <section className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <select
-                        value={limit}
-                        onChange={(event) => setLimit(Number(event.target.value))}
-                        className="field px-2 py-1 font-mono text-xs"
-                        aria-label="Bookmarks to scan"
-                      >
-                        {[25, 50, 100, 200, 500].map((count) => (
-                          <option key={count} value={count}>
-                            scan {count}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        className="btn-primary"
-                        disabled={scan.isPending}
-                        onClick={() => scan.mutate({ limit })}
-                      >
-                        {scan.isPending ? 'asking the model…' : 'scan library'}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn"
-                        disabled={
-                          scan.isPending || !library || library.counts.unsorted === 0
-                        }
-                        onClick={() => scan.mutate({ limit: 500, onlyUnsorted: true })}
-                        title="Assign a collection to every bookmark that has none"
-                      >
-                        tidy unsorted ({library?.counts.unsorted ?? 0})
-                      </button>
-                    </div>
-                    <p className="font-mono text-[11px] text-ink-faint">
-                      sends {limit} bookmarks to {aiSettings.model} · nothing applies
-                      until you press apply · duplicates go to trash, not deletion
+                <section className="panel flex flex-col gap-3 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(event) => setLimit(Number(event.target.value))}
+                      className="field px-2 py-1.5 font-mono text-xs"
+                      aria-label="Bookmarks to scan"
+                    >
+                      {[25, 50, 100, 200, 500].map((count) => (
+                        <option key={count} value={count}>
+                          scan {count}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={scan.isPending}
+                      onClick={() => scan.mutate({ limit })}
+                    >
+                      {scan.isPending ? 'asking the model…' : 'scan library'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn py-1.5"
+                      disabled={
+                        scan.isPending || !library || library.counts.unsorted === 0
+                      }
+                      onClick={() => scan.mutate({ limit: 500, onlyUnsorted: true })}
+                      title="Assign a collection to every bookmark that has none"
+                    >
+                      tidy unsorted ({library?.counts.unsorted ?? 0})
+                    </button>
+                  </div>
+                  <p className="font-mono text-[11px] leading-relaxed text-ink-faint">
+                    sends {limit} bookmarks to {aiSettings.model} · nothing applies until
+                    you press apply · duplicates go to trash, not deletion
+                  </p>
+                  {result && (
+                    <p className="rounded-md bg-surface-hover px-2.5 py-1.5 font-mono text-[11px] leading-relaxed text-ink-muted">
+                      scanned {result.scanned} in {result.batches}{' '}
+                      {result.batches === 1 ? 'batch' : 'batches'} · {duplicates.length}{' '}
+                      duplicate groups · {updates.length} updates selected ·{' '}
+                      {result.promptTokens + result.completionTokens} tokens
+                      {result.tidy && result.unassigned > 0
+                        ? ` · ${result.unassigned} still unassigned`
+                        : ''}
                     </p>
-                    {result && (
-                      <p className="font-mono text-[11px] text-ink-faint">
-                        scanned {result.scanned} in {result.batches}{' '}
-                        {result.batches === 1 ? 'batch' : 'batches'} · {duplicates.length}{' '}
-                        duplicate groups · {updates.length} updates selected ·{' '}
-                        {result.promptTokens + result.completionTokens} tokens
-                        {result.tidy && result.unassigned > 0
-                          ? ` · ${result.unassigned} still unassigned`
-                          : ''}
-                      </p>
-                    )}
-                    {message && (
-                      <p className="font-mono text-xs text-accent">{message}</p>
-                    )}
-                    {scan.isError && (
-                      <p className="font-mono text-xs text-danger">
-                        {scan.error instanceof Error ? scan.error.message : 'scan failed'}
-                      </p>
-                    )}
-                  </section>
+                  )}
+                  {message && (
+                    <p
+                      className={`font-mono text-xs font-semibold ${
+                        scan.isError || applyCleanup.isError ? 'text-danger' : 'text-ok'
+                      }`}
+                    >
+                      {message}
+                    </p>
+                  )}
+                  {scan.isError && (
+                    <p className="font-mono text-xs font-semibold text-danger">
+                      {scan.error instanceof Error ? scan.error.message : 'scan failed'}
+                    </p>
+                  )}
 
                   {result && (
                     <>
-                      <section className="flex flex-col gap-2">
-                        <h3 className="text-sm font-medium">Duplicates</h3>
+                      <div className="flex flex-col gap-2 border-t-2 border-line-soft pt-3">
+                        <h3 className="section-title text-base">Duplicates</h3>
                         {result.proposals.duplicates.length === 0 ? (
                           <p className="font-mono text-[11px] text-ink-faint">
                             no duplicates found in this batch
                           </p>
                         ) : (
-                          <ul className="flex flex-col gap-1.5">
+                          <ul className="flex flex-col gap-2">
                             {result.proposals.duplicates.map((group, index) => (
-                              <li key={group.keepId} className="panel flex gap-3 p-3">
+                              <li key={group.keepId} className="tile flex gap-3 p-3">
                                 <input
                                   type="checkbox"
-                                  className="checkbox mt-1 h-3.5 w-3.5 shrink-0"
+                                  className="checkbox mt-0.5"
                                   checked={!skippedDuplicates.has(index)}
                                   onChange={() =>
                                     setSkippedDuplicates((current) => {
@@ -263,11 +265,11 @@ export function Toolbox() {
                                 <div className="flex min-w-0 flex-col gap-1">
                                   <span className="text-sm">
                                     keep{' '}
-                                    <span className="font-medium">
+                                    <span className="font-semibold">
                                       {label(group.keepId)}
                                     </span>
                                   </span>
-                                  <span className="font-mono text-[11px] text-danger">
+                                  <span className="font-mono text-[11px] font-medium text-danger">
                                     trash {group.removeIds.map(label).join(' · ')}
                                   </span>
                                   {group.reason && (
@@ -280,10 +282,10 @@ export function Toolbox() {
                             ))}
                           </ul>
                         )}
-                      </section>
+                      </div>
 
-                      <section className="flex flex-col gap-2">
-                        <h3 className="text-sm font-medium">
+                      <div className="flex flex-col gap-2 border-t-2 border-line-soft pt-3">
+                        <h3 className="section-title text-base">
                           Tags, descriptions, collections
                         </h3>
                         {result.proposals.updates.length === 0 ? (
@@ -291,12 +293,12 @@ export function Toolbox() {
                             no metadata suggestions in this batch
                           </p>
                         ) : (
-                          <ul className="flex flex-col gap-1.5">
+                          <ul className="flex flex-col gap-2">
                             {result.proposals.updates.map((update) => (
-                              <li key={update.id} className="panel flex gap-3 p-3">
+                              <li key={update.id} className="tile flex gap-3 p-3">
                                 <input
                                   type="checkbox"
-                                  className="checkbox mt-1 h-3.5 w-3.5 shrink-0"
+                                  className="checkbox mt-0.5"
                                   checked={!skippedUpdates.has(update.id)}
                                   onChange={() =>
                                     setSkippedUpdates((current) => {
@@ -309,7 +311,7 @@ export function Toolbox() {
                                   aria-label={`Apply suggestion for ${label(update.id)}`}
                                 />
                                 <div className="flex min-w-0 flex-col gap-1">
-                                  <span className="truncate text-sm">
+                                  <span className="truncate text-sm font-semibold">
                                     {label(update.id)}
                                   </span>
                                   {update.tags && update.tags.length > 0 && (
@@ -332,12 +334,12 @@ export function Toolbox() {
                             ))}
                           </ul>
                         )}
-                      </section>
+                      </div>
 
-                      <div className="flex flex-col gap-2 border-t border-line pt-4">
+                      <div className="flex flex-col items-start gap-2 border-t-2 border-line-soft pt-3">
                         <button
                           type="button"
-                          className="btn-primary self-start"
+                          className="btn-primary"
                           disabled={
                             applyCleanup.isPending ||
                             duplicates.length + updates.length === 0
@@ -352,23 +354,20 @@ export function Toolbox() {
                       </div>
                     </>
                   )}
-                </>
+                </section>
               ) : (
-                <p className="border border-dashed border-line p-4 font-mono text-xs text-ink-faint">
+                <p className="empty px-5 py-6 leading-relaxed">
                   no AI provider configured — add a base URL, model, and API key in{' '}
-                  <Link
-                    to="/settings"
-                    className="text-accent underline underline-offset-4"
-                  >
+                  <Link to="/settings" className="link">
                     settings
                   </Link>
                 </p>
               )}
 
-              <section className="flex flex-col gap-3 border-t border-line pt-5">
+              <section className="panel flex flex-col gap-3 p-4">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-medium">Tags</h3>
-                  <p className="font-mono text-[11px] text-ink-faint">
+                  <h3 className="section-title">Tags</h3>
+                  <p className="font-mono text-[11px] leading-relaxed text-ink-faint">
                     merges tags that mean the same thing — {aiSettings?.model} proposes,
                     you pick
                   </p>
@@ -376,7 +375,7 @@ export function Toolbox() {
 
                 <button
                   type="button"
-                  className="btn self-start"
+                  className="btn self-start bg-lilac py-1.5"
                   disabled={suggestMerges.isPending}
                   onClick={() => {
                     setMergeMessage(null)
@@ -397,16 +396,18 @@ export function Toolbox() {
                 </button>
 
                 {mergeMessage && (
-                  <p className="font-mono text-xs text-ink-muted">{mergeMessage}</p>
+                  <p className="font-mono text-xs font-medium text-ink-muted">
+                    {mergeMessage}
+                  </p>
                 )}
 
                 {merges && merges.length > 0 && (
-                  <ul className="flex flex-col gap-1.5">
+                  <ul className="flex flex-col gap-2">
                     {merges.map((merge) => (
-                      <li key={merge.fromId} className="panel flex gap-3 p-3">
+                      <li key={merge.fromId} className="tile flex gap-3 p-3">
                         <input
                           type="checkbox"
-                          className="checkbox mt-1 h-3.5 w-3.5 shrink-0"
+                          className="checkbox mt-0.5"
                           checked={!skippedMerges.has(merge.fromId)}
                           onChange={() =>
                             setSkippedMerges((current) => {
@@ -424,7 +425,7 @@ export function Toolbox() {
                             <span className="font-mono text-[11px] text-ink-faint">
                               into
                             </span>{' '}
-                            <span className="font-medium">{merge.into}</span>
+                            <span className="font-semibold">{merge.into}</span>
                           </span>
                           {merge.reason && (
                             <span className="font-mono text-[11px] text-ink-faint">
@@ -469,10 +470,10 @@ export function Toolbox() {
                 )}
               </section>
 
-              <section className="flex flex-col gap-3 border-t border-line pt-5">
+              <section className="panel flex flex-col gap-3 p-4">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-medium">Duplicates</h3>
-                  <p className="font-mono text-[11px] text-ink-faint">
+                  <h3 className="section-title">Duplicates</h3>
+                  <p className="font-mono text-[11px] leading-relaxed text-ink-faint">
                     the same page saved twice with different query strings or trailing
                     slashes — no AI needed
                   </p>
@@ -481,7 +482,7 @@ export function Toolbox() {
                 {!showDuplicates && (
                   <button
                     type="button"
-                    className="btn self-start"
+                    className="btn self-start py-1.5"
                     onClick={() => setShowDuplicates(true)}
                   >
                     find duplicates
@@ -494,23 +495,20 @@ export function Toolbox() {
 
                 {showDuplicates &&
                   (duplicateGroups.data ?? []).map((group) => (
-                    <div
-                      key={group.key}
-                      className="flex flex-col gap-2 border border-line p-3"
-                    >
-                      <span className="font-mono text-[11px] text-ink-faint">
+                    <div key={group.key} className="tile flex flex-col p-3">
+                      <span className="truncate pb-2 font-mono text-[11px] font-semibold text-ink-muted">
                         {group.key}
                       </span>
                       {group.items.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between gap-3"
+                          className="flex items-center justify-between gap-3 border-t-2 border-line-soft py-2 last:pb-0"
                         >
                           <div className="min-w-0">
                             <Link
                               to="/bookmarks/$id"
                               params={{ id: item.id }}
-                              className="truncate text-sm text-ink underline-offset-4 hover:underline"
+                              className="block truncate text-sm font-semibold text-ink decoration-accent decoration-2 underline-offset-4 hover:underline"
                             >
                               {item.title || item.url}
                             </Link>
@@ -533,7 +531,7 @@ export function Toolbox() {
                 {showDuplicates &&
                   !duplicateGroups.isFetching &&
                   (duplicateGroups.data ?? []).length === 0 && (
-                    <p className="font-mono text-xs text-ink-muted">
+                    <p className="font-mono text-xs font-semibold text-ok">
                       nothing duplicated — the shelf is tidy
                     </p>
                   )}

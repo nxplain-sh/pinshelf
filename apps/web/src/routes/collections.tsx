@@ -2,7 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { SignOut } from '~/components/SignOut'
+import { AppHeader, PageHeading } from '~/components/AppHeader'
 import {
   queryKeys,
   useCreateCollection,
@@ -15,6 +15,7 @@ import {
 } from '~/lib/queries'
 import type { BookmarkFilters } from '~/lib/bookmarks.types'
 import { fetchSession } from '~/lib/session'
+import { tagTone } from '~/lib/tag-tone'
 import { listCollections } from '~/lib/taxonomy'
 
 export const Route = createFileRoute('/collections')({
@@ -60,45 +61,38 @@ function CollectionsPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-5 p-6">
-      <header className="flex items-center justify-between border-b border-line pb-4">
-        <Link
-          to="/"
-          className="font-mono text-xs text-ink-muted transition-colors hover:text-ink"
-        >
-          ← pinshelf
-        </Link>
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-xs text-ink-faint">collections</span>
-          <SignOut />
-        </div>
-      </header>
+    <main className="page">
+      <AppHeader />
+      <PageHeading title="collections" note="group bookmarks into shelves" />
 
-      <form onSubmit={create} className="flex gap-2">
-        <input
-          type="text"
-          required
-          placeholder="new collection name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          className="field flex-1"
-        />
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={createCollection.isPending}
-        >
-          Create
-        </button>
+      <form onSubmit={create} className="panel flex flex-col gap-3 p-4 sm:p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <label className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <span className="label">new collection</span>
+            <input
+              type="text"
+              required
+              placeholder="new collection name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="field"
+            />
+          </label>
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={createCollection.isPending}
+          >
+            Create
+          </button>
+        </div>
+        {error && <p className="font-mono text-xs text-danger">{error}</p>}
       </form>
-      {error && <p className="font-mono text-xs text-danger">{error}</p>}
 
       {collections.length === 0 ? (
-        <p className="border border-dashed border-line py-10 text-center font-mono text-xs text-ink-faint">
-          no collections yet
-        </p>
+        <p className="empty">no collections yet</p>
       ) : (
-        <ul className="flex flex-col gap-1.5">
+        <ul className="grid gap-3 sm:grid-cols-2">
           {collections.map((collection) => (
             <CollectionRow
               key={collection.id}
@@ -159,148 +153,152 @@ function SmartCollections() {
   }
 
   return (
-    <section className="flex flex-col gap-3 border-t border-line pt-5">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-medium">Smart collections</h2>
-        <p className="font-mono text-[11px] text-ink-faint">
-          saved filters that keep matching new saves · collections stay manual folders
-        </p>
+    <section className="panel">
+      <div className="panel-head bg-lilac">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="section-title">Smart collections</h2>
+          <p className="font-mono text-[11px] text-ink-muted">
+            saved filters that keep matching new saves · collections stay manual folders
+          </p>
+        </div>
       </div>
 
-      <ul className="flex flex-col gap-1.5">
-        {savedSearches.map((saved) => (
-          <li
-            key={saved.id}
-            className="panel flex items-center justify-between gap-3 p-3"
-          >
-            <div className="flex min-w-0 flex-col">
-              {saved.query.status === 'active' ? (
-                <Link
-                  to="/"
-                  search={{
-                    q: saved.query.q,
-                    tag: saved.query.tag,
-                    collection: saved.query.collection,
-                    sort: saved.query.sort,
-                  }}
-                  className="truncate text-sm text-ink underline-offset-4 hover:underline"
-                >
-                  {saved.name}
-                </Link>
-              ) : (
-                <Link
-                  to="/archive"
-                  search={{ status: saved.query.status }}
-                  className="truncate text-sm text-ink underline-offset-4 hover:underline"
-                >
-                  {saved.name}
-                </Link>
-              )}
-              <span className="font-mono text-[11px] text-ink-faint">
-                {describe(saved.query) || 'everything'}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="btn shrink-0"
-              onClick={() => removeSavedSearch.mutate(saved.id)}
+      <div className="flex flex-col gap-3 p-4">
+        <ul className="flex flex-col gap-2.5">
+          {savedSearches.map((saved) => (
+            <li
+              key={saved.id}
+              className="tile flex items-center justify-between gap-3 p-3"
             >
-              delete
-            </button>
-          </li>
-        ))}
-        {savedSearches.length === 0 && (
-          <li className="font-mono text-[11px] text-ink-faint">
-            nothing saved yet — ask the model for ideas, or save a filter from the list
-          </li>
-        )}
-      </ul>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className="btn"
-          disabled={suggest.isPending}
-          onClick={() => {
-            setMessage(null)
-            suggest.mutate(4, {
-              onSuccess: (items) =>
-                setSuggestions(
-                  items.map((item) => ({
-                    checked: true,
-                    name: item.name,
-                    reason: item.reason,
-                    query: {
-                      status: item.status,
-                      q: item.q,
-                      tag: item.tag,
-                      collection: item.collection,
-                      sort: item.sort,
-                    },
-                  })),
-                ),
-            })
-          }}
-        >
-          {suggest.isPending ? 'asking the model…' : 'suggest smart collections'}
-        </button>
-        {suggestions.length > 0 && (
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={saveSearch.isPending}
-            onClick={() => void saveSelected()}
-          >
-            {saveSearch.isPending ? 'saving…' : 'save selected'}
-          </button>
-        )}
-      </div>
-
-      {suggest.isError && (
-        <p className="font-mono text-xs text-danger">
-          {suggest.error instanceof Error
-            ? suggest.error.message
-            : 'could not get suggestions'}
-        </p>
-      )}
-      {message && (
-        <p role="status" className="font-mono text-xs text-ink-muted">
-          {message}
-        </p>
-      )}
-
-      {suggestions.length > 0 && (
-        <ul className="flex flex-col gap-1.5">
-          {suggestions.map((entry, index) => (
-            <li key={entry.name} className="panel flex items-start gap-3 p-3">
-              <input
-                type="checkbox"
-                checked={entry.checked}
-                onChange={(event) =>
-                  setSuggestions((current) =>
-                    current.map((item, position) =>
-                      position === index
-                        ? { ...item, checked: event.target.checked }
-                        : item,
-                    ),
-                  )
-                }
-                aria-label={`Save ${entry.name}`}
-                className="checkbox mt-1 h-3.5 w-3.5 shrink-0"
-              />
-              <div className="flex min-w-0 flex-col">
-                <span className="text-sm text-ink">{entry.name}</span>
-                <span className="font-mono text-[11px] text-ink-faint">
-                  {describe(entry.query) || 'everything'}
-                </span>
-                <span className="mt-1 font-mono text-[11px] text-ink-muted">
-                  {entry.reason}
+              <div className="flex min-w-0 flex-col gap-0.5">
+                {saved.query.status === 'active' ? (
+                  <Link
+                    to="/"
+                    search={{
+                      q: saved.query.q,
+                      tag: saved.query.tag,
+                      collection: saved.query.collection,
+                      sort: saved.query.sort,
+                    }}
+                    className="link truncate text-sm"
+                  >
+                    {saved.name}
+                  </Link>
+                ) : (
+                  <Link
+                    to="/archive"
+                    search={{ status: saved.query.status }}
+                    className="link truncate text-sm"
+                  >
+                    {saved.name}
+                  </Link>
+                )}
+                <span className="truncate font-mono text-[11px] text-ink-faint">
+                  {describe(saved.query) || 'everything'}
                 </span>
               </div>
+              <button
+                type="button"
+                className="btn btn-danger shrink-0"
+                onClick={() => removeSavedSearch.mutate(saved.id)}
+              >
+                delete
+              </button>
             </li>
           ))}
+          {savedSearches.length === 0 && (
+            <li className="empty py-6">
+              nothing saved yet — ask the model for ideas, or save a filter from the list
+            </li>
+          )}
         </ul>
-      )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="btn bg-lilac"
+            disabled={suggest.isPending}
+            onClick={() => {
+              setMessage(null)
+              suggest.mutate(4, {
+                onSuccess: (items) =>
+                  setSuggestions(
+                    items.map((item) => ({
+                      checked: true,
+                      name: item.name,
+                      reason: item.reason,
+                      query: {
+                        status: item.status,
+                        q: item.q,
+                        tag: item.tag,
+                        collection: item.collection,
+                        sort: item.sort,
+                      },
+                    })),
+                  ),
+              })
+            }}
+          >
+            {suggest.isPending ? 'asking the model…' : 'suggest smart collections'}
+          </button>
+          {suggestions.length > 0 && (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={saveSearch.isPending}
+              onClick={() => void saveSelected()}
+            >
+              {saveSearch.isPending ? 'saving…' : 'save selected'}
+            </button>
+          )}
+        </div>
+
+        {suggest.isError && (
+          <p className="font-mono text-xs text-danger">
+            {suggest.error instanceof Error
+              ? suggest.error.message
+              : 'could not get suggestions'}
+          </p>
+        )}
+        {message && (
+          <p role="status" className="font-mono text-xs text-ok">
+            {message}
+          </p>
+        )}
+
+        {suggestions.length > 0 && (
+          <ul className="flex flex-col gap-2.5">
+            {suggestions.map((entry, index) => (
+              <li key={entry.name} className="tile flex items-start gap-3 p-3">
+                <input
+                  type="checkbox"
+                  checked={entry.checked}
+                  onChange={(event) =>
+                    setSuggestions((current) =>
+                      current.map((item, position) =>
+                        position === index
+                          ? { ...item, checked: event.target.checked }
+                          : item,
+                      ),
+                    )
+                  }
+                  aria-label={`Save ${entry.name}`}
+                  className="checkbox mt-0.5"
+                />
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-ink">{entry.name}</span>
+                  <span className="font-mono text-[11px] text-ink-faint">
+                    {describe(entry.query) || 'everything'}
+                  </span>
+                  <span className="mt-1 font-mono text-[11px] text-ink-muted">
+                    {entry.reason}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   )
 }
@@ -340,25 +338,31 @@ function CollectionRow({
   }
 
   return (
-    <li className="panel flex flex-col gap-1 p-3">
-      <form onSubmit={rename} className="flex items-center gap-2">
-        <input
-          type="text"
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          className="field flex-1 px-2 py-1 text-sm"
-        />
-        <span className="shrink-0 font-mono text-[11px] text-ink-faint">
-          {bookmarkCount} bookmarks
-        </span>
-        <button type="submit" className="btn" disabled={renameCollection.isPending}>
-          rename
-        </button>
-        <button type="button" onClick={remove} className="btn">
-          delete
-        </button>
-      </form>
-      {error && <p className="font-mono text-xs text-danger">{error}</p>}
+    <li className="tile flex gap-3 p-3">
+      {/* A coloured spine, stable per name, so each shelf is easy to spot. */}
+      <span
+        className={`w-3 shrink-0 self-stretch rounded-sm border-2 border-line ${tagTone(name)}`}
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <form onSubmit={rename} className="flex flex-col gap-2.5">
+          <input
+            type="text"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            className="field w-full px-2 py-1 text-base font-bold"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="chip mr-auto">{bookmarkCount} bookmarks</span>
+            <button type="submit" className="btn" disabled={renameCollection.isPending}>
+              rename
+            </button>
+            <button type="button" onClick={remove} className="btn btn-danger">
+              delete
+            </button>
+          </div>
+        </form>
+        {error && <p className="font-mono text-xs text-danger">{error}</p>}
+      </div>
     </li>
   )
 }

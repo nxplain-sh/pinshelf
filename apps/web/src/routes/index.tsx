@@ -3,10 +3,9 @@ import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-ro
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { AddBookmarkForm } from '~/components/AddBookmarkForm'
+import { AppHeader, PageHeading } from '~/components/AppHeader'
 import { BookmarkList } from '~/components/BookmarkList'
 import { BulkActions } from '~/components/BulkActions'
-import { Logo } from '~/components/Logo'
-import { SignOut } from '~/components/SignOut'
 import { listBookmarks } from '~/lib/bookmarks'
 import { isBookmarkSort } from '~/lib/bookmarks.types'
 import type { BookmarkFilters, BookmarkSort } from '~/lib/bookmarks.types'
@@ -22,6 +21,7 @@ import {
 } from '~/lib/queries'
 import { fetchSession } from '~/lib/session'
 import { listCacheKey, readCachedList, writeCachedList } from '~/lib/offline'
+import { tagTone } from '~/lib/tag-tone'
 import { listCollections, listTags } from '~/lib/taxonomy'
 
 type BookmarkSearch = {
@@ -267,237 +267,168 @@ function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-5 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line pb-4">
-        <div className="flex items-baseline gap-3">
-          <div className="flex items-center gap-2">
-            <Logo />
-            <h1 className="text-base font-semibold tracking-tight">pinshelf</h1>
-          </div>
-          <span className="font-mono text-[11px] text-ink-faint">
-            {session.user.email}
-          </span>
-        </div>
-        <nav className="flex items-center gap-4 font-mono text-xs text-ink-muted">
-          <Link to="/archive" className="transition-colors hover:text-ink">
-            archive
-          </Link>
-          <Link to="/collections" className="transition-colors hover:text-ink">
-            collections
-          </Link>
-          <Link to="/tags" className="transition-colors hover:text-ink">
-            tags
-          </Link>
-          <Link to="/insights" className="transition-colors hover:text-ink">
-            insights
-          </Link>
-          <Link to="/settings" className="transition-colors hover:text-ink">
-            settings
-          </Link>
-          <SignOut />
-        </nav>
-      </header>
+    <main className="page">
+      <AppHeader />
+      <PageHeading title="shelf" note={`signed in as ${session.user.email}`}>
+        <span className="sticker">
+          {bookmarks.length} {bookmarks.length === 1 ? 'bookmark' : 'bookmarks'}
+        </span>
+      </PageHeading>
 
       {staleAt && (
-        <p className="panel border-warn/40 p-3 font-mono text-[11px] text-warn">
+        <p className="notice bg-accent">
           offline — showing the list cached {new Date(staleAt).toLocaleString()}. Saves
           and edits will not stick until the connection is back.
         </p>
       )}
 
-      <AddBookmarkForm />
+      <section className="panel flex flex-col gap-3 bg-accent p-4 shadow-hard-lg sm:p-5">
+        <span className="label text-ink">pin a link</span>
+        <AddBookmarkForm onAccent />
+      </section>
 
-      <div className="flex flex-col gap-2.5">
-        <form onSubmit={submitSearch} className="flex gap-2">
-          <input
-            type="search"
-            placeholder="search title, notes, url, tags…"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="field flex-1 font-mono"
-          />
-          <button type="submit" className="btn" aria-label="Search">
-            search
-          </button>
-          <button
-            type="button"
-            className="btn"
-            disabled={!query.trim() || smartSearch.isPending}
-            title="Describe what you want in plain words and let the model turn it into filters"
-            onClick={() => {
-              setSmartNote(null)
-              smartSearch.mutate(query, {
-                onSuccess: (filter) => {
-                  setSmartNote({
-                    tone: 'info',
-                    text:
-                      filter.explanation ??
-                      `q=${filter.q ?? '—'} tag=${filter.tag ?? '—'} collection=${filter.collection ?? '—'}`,
-                  })
-                  const target = {
-                    q: filter.q,
-                    tag: filter.tag,
-                    collection: filter.collection,
-                    sort: filter.sort,
-                  }
-                  if (filter.status && filter.status !== 'active') {
-                    void navigate({ to: '/archive', search: { status: filter.status } })
-                  } else {
-                    void navigate({ to: '/', search: target })
-                  }
-                },
-                onError: (cause) =>
-                  setSmartNote({
-                    tone: 'error',
-                    text:
-                      cause instanceof Error ? cause.message : 'could not interpret that',
-                  }),
-              })
-            }}
-          >
-            {smartSearch.isPending ? 'thinking…' : 'smart'}
-          </button>
-        </form>
-        {smartNote && (
-          <p
-            role="status"
-            className={`font-mono text-[11px] ${
-              smartNote.tone === 'error' ? 'text-danger' : 'text-ink-muted'
-            }`}
-          >
-            {smartNote.tone === 'error'
-              ? smartNote.text
-              : `interpreted: ${smartNote.text}`}
-          </p>
-        )}
+      <div className="panel flex flex-col">
+        <div className="flex flex-col gap-3 p-3 sm:p-4">
+          <form onSubmit={submitSearch} className="flex gap-2">
+            <input
+              type="search"
+              placeholder="search title, notes, url, tags…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="field min-w-0 flex-1 font-mono"
+            />
+            <button type="submit" className="btn" aria-label="Search">
+              search
+            </button>
+            <button
+              type="button"
+              className="btn bg-lilac"
+              disabled={!query.trim() || smartSearch.isPending}
+              title="Describe what you want in plain words and let the model turn it into filters"
+              onClick={() => {
+                setSmartNote(null)
+                smartSearch.mutate(query, {
+                  onSuccess: (filter) => {
+                    setSmartNote({
+                      tone: 'info',
+                      text:
+                        filter.explanation ??
+                        `q=${filter.q ?? '—'} tag=${filter.tag ?? '—'} collection=${filter.collection ?? '—'}`,
+                    })
+                    const target = {
+                      q: filter.q,
+                      tag: filter.tag,
+                      collection: filter.collection,
+                      sort: filter.sort,
+                    }
+                    if (filter.status && filter.status !== 'active') {
+                      void navigate({ to: '/archive', search: { status: filter.status } })
+                    } else {
+                      void navigate({ to: '/', search: target })
+                    }
+                  },
+                  onError: (cause) =>
+                    setSmartNote({
+                      tone: 'error',
+                      text:
+                        cause instanceof Error
+                          ? cause.message
+                          : 'could not interpret that',
+                    }),
+                })
+              }}
+            >
+              {smartSearch.isPending ? 'thinking…' : 'smart'}
+            </button>
+          </form>
+          {smartNote && (
+            <p
+              role="status"
+              className={`notice self-start ${
+                smartNote.tone === 'error' ? 'bg-coral' : 'bg-lilac'
+              }`}
+            >
+              {smartNote.tone === 'error'
+                ? smartNote.text
+                : `interpreted: ${smartNote.text}`}
+            </p>
+          )}
 
-        {(savedSearches.length > 0 || hasFilters) && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="label">saved</span>
-            {savedSearches.map((saved) => (
-              <span key={saved.id} className="flex items-center gap-1">
-                <Link
-                  to="/"
-                  search={{
-                    q: saved.query.q,
-                    tag: saved.query.tag,
-                    collection: saved.query.collection,
-                    host: saved.query.host,
-                    sort: saved.query.sort,
-                  }}
-                  className="chip hover:border-line-strong hover:text-ink"
-                >
-                  {saved.name}
-                </Link>
-                <button
-                  type="button"
-                  aria-label={`Delete saved search ${saved.name}`}
-                  className="font-mono text-[11px] text-ink-faint hover:text-danger"
-                  onClick={() => removeSavedSearch.mutate(saved.id)}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-            {hasFilters && (
-              <form
-                className="flex items-center gap-1"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  saveSearch.mutate(
-                    { name: searchName, query: filtersFor(search) },
-                    {
-                      onSuccess: () => setSearchName(''),
-                    },
-                  )
-                }}
-              >
-                <input
-                  value={searchName}
-                  onChange={(event) => setSearchName(event.target.value)}
-                  placeholder="name this search"
-                  aria-label="Saved search name"
-                  className="field px-2 py-1 font-mono text-xs"
-                />
-                <button type="submit" className="btn" disabled={!searchName.trim()}>
-                  save
-                </button>
-              </form>
-            )}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+            <input
+              value={hostQuery}
+              onChange={(event) => setHostQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') return
+                void navigate({
+                  to: '/',
+                  search: {
+                    q: search.q,
+                    tag: search.tag,
+                    collection: search.collection,
+                    sort: search.sort,
+                    host: hostQuery.trim().toLowerCase() || undefined,
+                  },
+                })
+              }}
+              placeholder="host, e.g. doc.rust-lang.org"
+              aria-label="Filter by host"
+              className="field col-span-2 min-w-0 px-2.5 py-1.5 font-mono text-xs sm:col-span-1"
+            />
+            <select
+              value={search.collection ?? ''}
+              onChange={(event) =>
+                void navigate({
+                  to: '/',
+                  search: {
+                    q: search.q,
+                    tag: search.tag,
+                    sort: search.sort,
+                    host: search.host,
+                    collection: event.target.value || undefined,
+                  },
+                })
+              }
+              className="field min-w-0 px-2 py-1.5 font-mono text-xs"
+              aria-label="Filter by collection"
+            >
+              <option value="">all bookmarks</option>
+              <option value="unsorted">unsorted</option>
+              {collections.map((collection) => (
+                <option key={collection.id} value={collection.id}>
+                  {collection.name} ({collection.bookmarkCount})
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={search.sort ?? 'newest'}
+              onChange={(event) =>
+                void navigate({
+                  to: '/',
+                  search: {
+                    q: search.q,
+                    tag: search.tag,
+                    collection: search.collection,
+                    host: search.host,
+                    sort: event.target.value as BookmarkSort,
+                  },
+                })
+              }
+              className="field min-w-0 px-2 py-1.5 font-mono text-xs"
+              aria-label="Sort bookmarks"
+            >
+              {SORTS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            value={hostQuery}
-            onChange={(event) => setHostQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return
-              void navigate({
-                to: '/',
-                search: {
-                  q: search.q,
-                  tag: search.tag,
-                  collection: search.collection,
-                  sort: search.sort,
-                  host: hostQuery.trim().toLowerCase() || undefined,
-                },
-              })
-            }}
-            placeholder="host, e.g. doc.rust-lang.org"
-            aria-label="Filter by host"
-            className="field px-2 py-1 font-mono text-xs"
-          />
-          <select
-            value={search.collection ?? ''}
-            onChange={(event) =>
-              void navigate({
-                to: '/',
-                search: {
-                  q: search.q,
-                  tag: search.tag,
-                  sort: search.sort,
-                  host: search.host,
-                  collection: event.target.value || undefined,
-                },
-              })
-            }
-            className="field px-2 py-1 font-mono text-xs"
-            aria-label="Filter by collection"
-          >
-            <option value="">all bookmarks</option>
-            <option value="unsorted">unsorted</option>
-            {collections.map((collection) => (
-              <option key={collection.id} value={collection.id}>
-                {collection.name} ({collection.bookmarkCount})
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={search.sort ?? 'newest'}
-            onChange={(event) =>
-              void navigate({
-                to: '/',
-                search: {
-                  q: search.q,
-                  tag: search.tag,
-                  collection: search.collection,
-                  host: search.host,
-                  sort: event.target.value as BookmarkSort,
-                },
-              })
-            }
-            className="field px-2 py-1 font-mono text-xs"
-            aria-label="Sort bookmarks"
-          >
-            {SORTS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
+        <div className="flex flex-wrap items-center gap-1.5 border-t-2 border-line-soft px-3 py-3 sm:px-4">
+          <span className="label mr-1">tags</span>
           {visibleTags.map((tag) => {
             const active = search.tag === tag.name
             return (
@@ -517,9 +448,7 @@ function Home() {
                   })
                 }
                 className={
-                  active
-                    ? 'rounded border border-accent/50 bg-accent/10 px-1.5 py-0.5 font-mono text-[11px] text-accent'
-                    : 'chip transition-colors hover:border-line-strong hover:text-ink'
+                  active ? 'chip bg-ink text-surface' : `chip ${tagTone(tag.name)}`
                 }
               >
                 {tag.name}
@@ -528,11 +457,7 @@ function Home() {
           })}
 
           {!showAllTags && tags.length > visibleTags.length && (
-            <button
-              type="button"
-              onClick={() => setShowAllTags(true)}
-              className="chip transition-colors hover:border-line-strong hover:text-ink"
-            >
+            <button type="button" onClick={() => setShowAllTags(true)} className="chip">
               +{tags.length - visibleTags.length} more
             </button>
           )}
@@ -544,12 +469,72 @@ function Home() {
                 setQuery('')
                 void navigate({ to: '/', search: {} })
               }}
-              className="font-mono text-[11px] text-ink-faint underline underline-offset-4 hover:text-ink"
+              className="link ml-auto font-mono text-[11px]"
             >
               clear filters
             </button>
           )}
         </div>
+
+        {(savedSearches.length > 0 || hasFilters) && (
+          <div className="flex flex-wrap items-center gap-1.5 rounded-b-[calc(var(--radius-lg)-2px)] border-t-2 border-line-soft bg-surface-hover px-3 py-3 sm:px-4">
+            <span className="label mr-1">saved</span>
+            {savedSearches.map((saved) => (
+              // One pill, two targets: the name opens the search, × deletes it.
+              <span
+                key={saved.id}
+                className="inline-flex items-stretch rounded-full border-2 border-line bg-pink font-mono text-[11px] leading-4 font-semibold text-ink"
+              >
+                <Link
+                  to="/"
+                  search={{
+                    q: saved.query.q,
+                    tag: saved.query.tag,
+                    collection: saved.query.collection,
+                    host: saved.query.host,
+                    sort: saved.query.sort,
+                  }}
+                  className="rounded-l-full py-px pr-1.5 pl-2 hover:underline"
+                >
+                  {saved.name}
+                </Link>
+                <button
+                  type="button"
+                  aria-label={`Delete saved search ${saved.name}`}
+                  className="rounded-r-full border-l-2 border-line px-1.5 transition-colors hover:bg-coral"
+                  onClick={() => removeSavedSearch.mutate(saved.id)}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            {hasFilters && (
+              <form
+                className="flex items-center gap-1.5 sm:ml-auto"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  saveSearch.mutate(
+                    { name: searchName, query: filtersFor(search) },
+                    {
+                      onSuccess: () => setSearchName(''),
+                    },
+                  )
+                }}
+              >
+                <input
+                  value={searchName}
+                  onChange={(event) => setSearchName(event.target.value)}
+                  placeholder="name this search"
+                  aria-label="Saved search name"
+                  className="field w-40 px-2 py-1 font-mono text-xs"
+                />
+                <button type="submit" className="btn" disabled={!searchName.trim()}>
+                  save
+                </button>
+              </form>
+            )}
+          </div>
+        )}
       </div>
 
       {selected.size > 0 && (
@@ -564,7 +549,7 @@ function Home() {
       )}
 
       {manual && (
-        <p className="font-mono text-[11px] text-ink-faint">
+        <p className="-mb-2 font-mono text-[11px] text-ink-faint">
           drag rows by the handle to set your own order
           {search.q || search.tag || search.collection
             ? ' — ordering applies to the visible list'
