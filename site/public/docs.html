@@ -16,7 +16,22 @@
     <meta property="og:image" content="https://pinshelf.app/assets/social-card.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f4eee1" />
     <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="preload"
+      href="fonts/space-grotesk-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="fonts/jetbrains-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <script>
       document.documentElement.classList.add('js')
     </script>
@@ -27,22 +42,25 @@
         <a class="brand" href="./">
           <svg
             class="mark"
-            width="22"
-            height="22"
+            width="30"
+            height="30"
             viewBox="0 0 120 120"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
-            <circle
-              cx="66"
-              cy="46"
-              r="20"
-              fill="none"
-              stroke="var(--steel)"
-              stroke-width="17"
-            />
-            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            <rect width="120" height="120" rx="26" fill="var(--ink)" />
+            <g transform="translate(13.2 13.2) scale(0.78)">
+              <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--brass)" />
+              <circle
+                cx="66"
+                cy="46"
+                r="20"
+                fill="none"
+                stroke="var(--steel)"
+                stroke-width="17"
+              />
+              <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            </g>
           </svg>
           <span class="wordmark">pinshelf</span>
           <span class="crumb">/ docs</span>

@@ -6,31 +6,49 @@
     <title>404 — pinshelf</title>
     <meta name="description" content="That page is not on the shelf." />
     <meta name="robots" content="noindex" />
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f4eee1" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="preload"
+      href="/fonts/space-grotesk-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/jetbrains-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
   </head>
   <body>
     <header class="site-header">
       <div class="wrap header-inner">
-        <a class="brand" href="./">
+        <a class="brand" href="/">
           <svg
             class="mark"
-            width="22"
-            height="22"
+            width="30"
+            height="30"
             viewBox="0 0 120 120"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--accent)" />
-            <circle
-              cx="66"
-              cy="46"
-              r="20"
-              fill="none"
-              stroke="var(--steel)"
-              stroke-width="17"
-            />
-            <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            <rect width="120" height="120" rx="26" fill="var(--ink)" />
+            <g transform="translate(13.2 13.2) scale(0.78)">
+              <rect x="12" y="78" width="96" height="14" rx="7" fill="var(--brass)" />
+              <circle
+                cx="66"
+                cy="46"
+                r="20"
+                fill="none"
+                stroke="var(--steel)"
+                stroke-width="17"
+              />
+              <path d="M30 14 H48 V86 L39 104 L30 86 Z" fill="var(--steel)" />
+            </g>
           </svg>
           <span class="wordmark">pinshelf</span>
         </a>
@@ -38,30 +56,38 @@
     </header>
 
     <main class="wrap notfound">
-      <svg
-        width="48"
-        height="48"
-        viewBox="0 0 120 120"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <rect x="16" y="80" width="88" height="11" rx="5.5" fill="var(--accent)" />
-        <circle
-          cx="64"
-          cy="46"
-          r="20"
-          fill="none"
-          stroke="var(--steel)"
-          stroke-width="15"
-        />
-        <path d="M32 16 H45 V88 L38.5 102 L32 88 Z" fill="var(--steel)" />
-      </svg>
-      <h1>This shelf is empty.</h1>
-      <p>
-        That page is not on the shelf. The
-        <a class="link" href="./">home page</a> is.
-      </p>
-      <a class="btn" href="./">back home</a>
+      <div class="notfound-box">
+        <p class="eyebrow">404 · not found</p>
+        <div>
+          <svg
+            width="76"
+            height="76"
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect width="120" height="120" rx="26" fill="var(--ink)" />
+            <g transform="translate(13.2 13.2) scale(0.78)">
+              <rect x="16" y="80" width="88" height="11" rx="5.5" fill="var(--brass)" />
+              <circle
+                cx="64"
+                cy="46"
+                r="20"
+                fill="none"
+                stroke="var(--steel)"
+                stroke-width="15"
+              />
+              <path d="M32 16 H45 V88 L38.5 102 L32 88 Z" fill="var(--steel)" />
+            </g>
+          </svg>
+        </div>
+        <h1>This shelf is empty.</h1>
+        <p>
+          That page is not on the shelf. The
+          <a class="link" href="/">home page</a> is.
+        </p>
+        <a class="btn btn-primary" href="/">back home</a>
+      </div>
     </main>
 
     <footer>
@@ -89,7 +115,7 @@
           pinshelf · MIT · built under nxplain.sh
         </p>
         <nav aria-label="footer">
-          <a href="docs">docs</a>
+          <a href="/docs">docs</a>
           <a href="https://github.com/nxplain-sh/pinshelf/releases">releases</a>
           <a href="https://github.com/nxplain-sh/pinshelf/issues">issues</a>
           <a href="https://github.com/nxplain-sh/pinshelf">github</a>
