@@ -6,7 +6,7 @@
 
 # Base images are pinned by digest so a rebuild is the same image; Renovate
 # moves the digest when the tag moves.
-FROM node:22-bookworm-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9 AS build
+FROM node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS build
 
 ENV CI=1
 RUN corepack enable
@@ -24,7 +24,7 @@ RUN pnpm install --frozen-lockfile --filter @pinshelf/web...
 COPY . .
 RUN pnpm --filter @pinshelf/web build
 
-FROM node:22-bookworm-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9 AS runtime
+FROM node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS runtime
 
 LABEL org.opencontainers.image.title="pinshelf" \
   org.opencontainers.image.description="Self-hosted bookmark manager" \
